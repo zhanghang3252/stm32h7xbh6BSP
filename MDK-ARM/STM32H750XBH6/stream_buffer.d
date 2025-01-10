@@ -1,0 +1,15 @@
+stm32h750xbh6\stream_buffer.o: ..\Drivers\FreeRTOS\stream_buffer.c
+stm32h750xbh6\stream_buffer.o: C:\APP\Keil_v5\ARM\ARMCC\Bin\..\include\string.h
+stm32h750xbh6\stream_buffer.o: ..\Drivers\FreeRTOS\include\FreeRTOS.h
+stm32h750xbh6\stream_buffer.o: C:\APP\Keil_v5\ARM\ARMCC\Bin\..\include\stddef.h
+stm32h750xbh6\stream_buffer.o: C:\APP\Keil_v5\ARM\ARMCC\Bin\..\include\stdint.h
+stm32h750xbh6\stream_buffer.o: ..\Drivers\FreeRTOS\include\FreeRTOSConfig.h
+stm32h750xbh6\stream_buffer.o: C:\APP\Keil_v5\ARM\ARMCC\Bin\..\include\stdio.h
+stm32h750xbh6\stream_buffer.o: ..\Drivers\FreeRTOS\include\projdefs.h
+stm32h750xbh6\stream_buffer.o: ..\Drivers\FreeRTOS\include\portable.h
+stm32h750xbh6\stream_buffer.o: ..\Drivers\FreeRTOS\include\deprecated_definitions.h
+stm32h750xbh6\stream_buffer.o: ..\Drivers\FreeRTOS\portable\RVDS\ARM_CM7\r0p1\portmacro.h
+stm32h750xbh6\stream_buffer.o: ..\Drivers\FreeRTOS\include\mpu_wrappers.h
+stm32h750xbh6\stream_buffer.o: ..\Drivers\FreeRTOS\include\task.h
+stm32h750xbh6\stream_buffer.o: ..\Drivers\FreeRTOS\include\list.h
+stm32h750xbh6\stream_buffer.o: ..\Drivers\FreeRTOS\include\stream_buffer.h

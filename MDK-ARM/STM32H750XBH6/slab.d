@@ -1,0 +1,9 @@
+stm32h750xbh6\slab.o: ..\rtthread\src\slab.c
+stm32h750xbh6\slab.o: ..\rtthread\include\rthw.h
+stm32h750xbh6\slab.o: ..\rtthread\include\rtthread.h
+stm32h750xbh6\slab.o: ..\rtthread\rtconfig.h
+stm32h750xbh6\slab.o: ..\rtthread\include\rtthread.h
+stm32h750xbh6\slab.o: ..\rtthread\include\rtdebug.h
+stm32h750xbh6\slab.o: ..\rtthread\include\rtdef.h
+stm32h750xbh6\slab.o: ..\rtthread\include\rtservice.h
+stm32h750xbh6\slab.o: ..\rtthread\include\rtm.h

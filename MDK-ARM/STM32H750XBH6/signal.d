@@ -1,0 +1,11 @@
+stm32h750xbh6\signal.o: ..\rtthread\src\signal.c
+stm32h750xbh6\signal.o: C:\APP\Keil_v5\ARM\ARMCC\Bin\..\include\stdint.h
+stm32h750xbh6\signal.o: C:\APP\Keil_v5\ARM\ARMCC\Bin\..\include\string.h
+stm32h750xbh6\signal.o: ..\rtthread\include\rthw.h
+stm32h750xbh6\signal.o: ..\rtthread\include\rtthread.h
+stm32h750xbh6\signal.o: ..\rtthread\rtconfig.h
+stm32h750xbh6\signal.o: ..\rtthread\include\rtthread.h
+stm32h750xbh6\signal.o: ..\rtthread\include\rtdebug.h
+stm32h750xbh6\signal.o: ..\rtthread\include\rtdef.h
+stm32h750xbh6\signal.o: ..\rtthread\include\rtservice.h
+stm32h750xbh6\signal.o: ..\rtthread\include\rtm.h
