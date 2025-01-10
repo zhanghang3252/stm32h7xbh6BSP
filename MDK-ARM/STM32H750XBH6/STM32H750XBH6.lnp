@@ -140,6 +140,7 @@
 "stm32h750xbh6\croutine.o"
 "stm32h750xbh6\port.o"
 "stm32h750xbh6\heap_4.o"
+"stm32h750xbh6\freegui.o"
 --library_type=microlib --strict --scatter "STM32H750XBH6\STM32H750XBH6.sct"
 --summary_stderr --info summarysizes --map --load_addr_map_info --xref --callgraph --symbols
 --info sizes --info totals --info unused --info veneers

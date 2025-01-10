@@ -33,24 +33,21 @@
  3. 用户可以在电脑用调色板获取24位RGB颜色，再将颜色输入LCD_SetColor()或LCD_SetBackColor()就可以显示出相应的颜色 
  */                                                  						
 #define 	LCD_WHITE       0xFFFFFF	 // 纯白色
-#define 	LCD_BLACK       0x000000    // 纯黑色
-                        
+#define 	LCD_BLACK       0x000000    // 纯黑色                     
 #define 	LCD_BLUE        0x0000FF	 //	纯蓝色
 #define 	LCD_GREEN       0x00FF00    //	纯绿色
 #define 	LCD_RED         0xFF0000    //	纯红色
 #define 	LCD_CYAN        0x00FFFF    //	蓝绿色
 #define 	LCD_MAGENTA     0xFF00FF    //	紫红色
 #define 	LCD_YELLOW      0xFFFF00    //	黄色
-#define 	LCD_GREY        0x2C2C2C    //	灰色
-												
+#define 	LCD_GREY        0x2C2C2C    //	灰色												
 #define 	LIGHT_BLUE      0x8080FF    //	亮蓝色
 #define 	LIGHT_GREEN     0x80FF80    //	亮绿色
 #define 	LIGHT_RED       0xFF8080    //	亮红色
 #define 	LIGHT_CYAN      0x80FFFF    //	亮蓝绿色
 #define 	LIGHT_MAGENTA   0xFF80FF    //	亮紫红色
 #define 	LIGHT_YELLOW    0xFFFF80    //	亮黄色
-#define 	LIGHT_GREY      0xA3A3A3    //	亮灰色
-												
+#define 	LIGHT_GREY      0xA3A3A3    //	亮灰色											
 #define 	DARK_BLUE       0x000080    //	暗蓝色
 #define 	DARK_GREEN      0x008000    //	暗绿色
 #define 	DARK_RED        0x800000    //	暗红色
@@ -109,19 +106,19 @@ void	LCD_CopyBuffer(uint16_t x, uint16_t y,uint16_t width,uint16_t height,uint16
 
  /*--------------------------------------------- LCD其它引脚 -----------------------------------------------*/
 
-#define  LCD_Backlight_PIN								GPIO_PIN_6				         // 背光  引脚				
+#define LCD_Backlight_PIN								GPIO_PIN_6				         // 背光  引脚				
 #define	LCD_Backlight_PORT							GPIOH									// 背光 GPIO端口
-#define 	GPIO_LDC_Backlight_CLK_ENABLE        	__HAL_RCC_GPIOH_CLK_ENABLE()	// 背光 GPIO时钟 	
+#define GPIO_LDC_Backlight_CLK_ENABLE   __HAL_RCC_GPIOH_CLK_ENABLE()	// 背光 GPIO时钟 	
 
-#define	LCD_Backlight_OFF		HAL_GPIO_WritePin(LCD_Backlight_PORT, LCD_Backlight_PIN, GPIO_PIN_RESET);	// 低电平，关闭背光
-#define 	LCD_Backlight_ON		HAL_GPIO_WritePin(LCD_Backlight_PORT, LCD_Backlight_PIN, GPIO_PIN_SET);		// 高电平，开启背光
+#define	LCD_Backlight_OFF								HAL_GPIO_WritePin(LCD_Backlight_PORT, LCD_Backlight_PIN, GPIO_PIN_RESET);	// 低电平，关闭背光
+#define LCD_Backlight_ON								HAL_GPIO_WritePin(LCD_Backlight_PORT, LCD_Backlight_PIN, GPIO_PIN_SET);		// 高电平，开启背光
  
-#define  LCD_DC_PIN						GPIO_PIN_11				         // 数据指令选择  引脚				
-#define	LCD_DC_PORT						GPIOJ									// 数据指令选择  GPIO端口
-#define 	GPIO_LDC_DC_CLK_ENABLE     __HAL_RCC_GPIOJ_CLK_ENABLE()	// 数据指令选择  GPIO时钟 	
+#define LCD_DC_PIN											GPIO_PIN_11				         // 数据指令选择  引脚				
+#define	LCD_DC_PORT											GPIOJ									// 数据指令选择  GPIO端口
+#define GPIO_LDC_DC_CLK_ENABLE     			__HAL_RCC_GPIOJ_CLK_ENABLE()	// 数据指令选择  GPIO时钟 	
 
-#define	LCD_DC_Command		   HAL_GPIO_WritePin(LCD_DC_PORT, LCD_DC_PIN, GPIO_PIN_RESET);	   // 低电平，指令传输 
-#define 	LCD_DC_Data		      HAL_GPIO_WritePin(LCD_DC_PORT, LCD_DC_PIN, GPIO_PIN_SET);		// 高电平，数据传输
+#define	LCD_DC_Command		   						HAL_GPIO_WritePin(LCD_DC_PORT, LCD_DC_PIN, GPIO_PIN_RESET);	   // 低电平，指令传输 
+#define LCD_DC_Data		      						HAL_GPIO_WritePin(LCD_DC_PORT, LCD_DC_PIN, GPIO_PIN_SET);		// 高电平，数据传输
 
 #endif //__spi_lcd
 

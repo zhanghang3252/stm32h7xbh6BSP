@@ -210,6 +210,10 @@ void  LCD_WriteData_16bit(uint16_t lcd_data)
    lcd_data_buff[1] = lcd_data;
 		
 	HAL_SPI_Transmit(&LCD_SPI, lcd_data_buff, 2, 1000) ;   // 启动SPI传输
+	
+	// 改回8位数据宽度，因为指令和部分数据都是按照8位传输的
+	LCD_SPI.Init.DataSize 	= SPI_DATASIZE_8BIT;    //	8位数据宽度
+   HAL_SPI_Init(&LCD_SPI);	
 }
 
 /****************************************************************************************************************************************
@@ -330,12 +334,12 @@ void SPI_LCD_Init(void)
 	
 // 以下进行一些驱动的默认设置
    LCD_SetDirection(Direction_V);  	      //	设置显示方向
-	LCD_SetBackColor(LCD_BLACK);           // 设置背景色
- 	LCD_SetColor(LCD_WHITE);               // 设置画笔色  
+	LCD_SetBackColor(LCD_WHITE);           // 设置背景色
+ 	LCD_SetColor(LCD_BLACK);               // 设置画笔色  
 	LCD_Clear();                           // 清屏
 
    LCD_SetAsciiFont(&ASCII_Font24);       // 设置默认字体
-   LCD_ShowNumMode(Fill_Zero);	      	// 设置变量显示模式，多余位填充空格还是填充0
+   LCD_ShowNumMode(Fill_Space);	      	// 设置变量显示模式，多余位填充空格还是填充0
 
 // 全部设置完毕之后，打开背光	
    LCD_Backlight_ON;  // 引脚输出高电平点亮背光

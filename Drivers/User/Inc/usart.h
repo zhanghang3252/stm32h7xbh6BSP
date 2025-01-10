@@ -1,8 +1,9 @@
 #ifndef __USART_H
 #define __USART_H
-
+#include "stm32h7xx_hal.h"
 #include "stdio.h"
 
+extern UART_HandleTypeDef huart1;  // UART_HandleTypeDef 结构体变量
 /*-------------------------------------------- USART配置宏 ---------------------------------------*/
 
 #define  USART1_BaudRate  115200

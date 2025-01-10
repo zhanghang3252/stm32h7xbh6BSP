@@ -60,3 +60,7 @@ stm32h750xbh6\rtos_task.o: ..\Drivers\FreeRTOS\portable\RVDS\ARM_CM7\r0p1\portma
 stm32h750xbh6\rtos_task.o: ..\Drivers\FreeRTOS\include\mpu_wrappers.h
 stm32h750xbh6\rtos_task.o: ..\Drivers\FreeRTOS\include\task.h
 stm32h750xbh6\rtos_task.o: ..\Drivers\FreeRTOS\include\list.h
+stm32h750xbh6\rtos_task.o: ..\Drivers\FreeRTOS\include\semphr.h
+stm32h750xbh6\rtos_task.o: ..\Drivers\FreeRTOS\include\queue.h
+stm32h750xbh6\rtos_task.o: ..\Drivers\FreeRTOS\include\timers.h
+stm32h750xbh6\rtos_task.o: ..\Drivers\FreeGUI\FreeGUI.h

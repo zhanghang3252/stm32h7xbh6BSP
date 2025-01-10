@@ -11,6 +11,10 @@
 
 #include "FreeRTOS.h"
 #include "task.h"
+#include "semphr.h"
+#include "timers.h"
+
+#include "FreeGUI.h"
 
 void FreeRTOS_Start(void);
 void sys_init(void);

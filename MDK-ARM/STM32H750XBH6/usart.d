@@ -1,6 +1,5 @@
 stm32h750xbh6\usart.o: ..\Drivers\User\Src\usart.c
 stm32h750xbh6\usart.o: ..\Drivers\User\Inc\usart.h
-stm32h750xbh6\usart.o: C:\APP\Keil_v5\ARM\ARMCC\Bin\..\include\stdio.h
 stm32h750xbh6\usart.o: ../Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal.h
 stm32h750xbh6\usart.o: ../Core/Inc/stm32h7xx_hal_conf.h
 stm32h750xbh6\usart.o: ../Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_rcc.h
@@ -43,3 +42,4 @@ stm32h750xbh6\usart.o: ../Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_spi.h
 stm32h750xbh6\usart.o: ../Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_spi_ex.h
 stm32h750xbh6\usart.o: ../Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_uart.h
 stm32h750xbh6\usart.o: ../Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_uart_ex.h
+stm32h750xbh6\usart.o: C:\APP\Keil_v5\ARM\ARMCC\Bin\..\include\stdio.h

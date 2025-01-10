@@ -1,21 +1,26 @@
 #include "rtos_task.h"
+#define Task_num 5
+Free_window main_win;
 //线程状态
-BaseType_t Returned[10];
+BaseType_t Returned[Task_num];
 
 //线程句柄
 TaskHandle_t ledHandle = NULL;
 TaskHandle_t usartHandle = NULL;
+TaskHandle_t recv_usartHandle = NULL;
 TaskHandle_t lcdtHandle = NULL;
 TaskHandle_t device_testingramtHandle = NULL;
 //函数定义
 void sd_test(void);
 void sdram_test( void );
-//线程函数
+//函数声明
 void led_TaskCode( void * pvParameters );
 void usart_TaskCode( void * pvParameters );
+void recv_usart_TaskCode( void * pvParameters );
 void lcd_TaskCode( void * pvParameters );
 void device_testing_TaskCode(void * pvParameters);
-
+void usart_timer_CallbackFunction( TimerHandle_t xTimer );
+	
 //变量
 #define	NumOf_Blocks	64
 #define Test_BlockSize  ((BLOCKSIZE * NumOf_Blocks) >> 2)	 //定义数据大小,SD块大小为512字节，因为是32位的数组，所以这里除以4
@@ -27,19 +32,41 @@ uint32_t SD_Status ; 		 //SD卡检测标志位
 uint32_t SD_WriteBuffer[Test_BlockSize];	//	写数据数组
 uint32_t SD_ReadBuffer[Test_BlockSize];	//	读数据数组
 
+unsigned char recv_uart_buf=0;
+//信号量/互斥锁
+SemaphoreHandle_t usart_Semaphore;//创建串口互斥锁
+SemaphoreHandle_t lcd_Semaphore;//创建互斥锁
+
+//定时器
+TimerHandle_t usart_Timers;
 void FreeRTOS_Start( void )
 {
 	sys_init();
-	Returned[0] = xTaskCreate(led_TaskCode,"led_Task",64,NULL,1,&ledHandle );
+	
+	//创建互斥锁
+	usart_Semaphore=xSemaphoreCreateMutex();
+	
+//	//创建定时器
+//	usart_Timers = xTimerCreate("usart_Timers",pdMS_TO_TICKS(100),pdTRUE,0,usart_timer_CallbackFunction);
+	
+	//创建线程
+	Returned[0] = xTaskCreate(led_TaskCode,"led_Task",64,NULL,31,&ledHandle );
 	Returned[1] = xTaskCreate(usart_TaskCode,"usart_Task",128,NULL,2,&usartHandle );
-	Returned[2] = xTaskCreate(lcd_TaskCode,"lcd_Task",128,NULL,3,&lcdtHandle );
+	Returned[2] = xTaskCreate(lcd_TaskCode,"lcd_Task",256,NULL,3,&lcdtHandle );
 	Returned[3] = xTaskCreate(device_testing_TaskCode,"device_testing",2048,NULL,4,&device_testingramtHandle );
+	Returned[4] = xTaskCreate(recv_usart_TaskCode,"recv_usart_Task",128,NULL,2,&usartHandle );
+	
 	printf("thread state:\t");//打印线程状态
-	for(int i=0;i<9;i++)
+	for(int i=0;i<Task_num;i++)
 		printf("%ld\t",Returned[i]);//打印线程状态
 	printf("\r\n");
 	vTaskStartScheduler();
 }
+////定时器回调函数
+//void usart_timer_CallbackFunction( TimerHandle_t xTimer )
+//{
+//	printf("定时器时间到\r\n");
+//}
 
 void sys_init(void)
 {
@@ -59,11 +86,10 @@ void sys_init(void)
 
 void led_TaskCode( void * pvParameters )
 {
-		
     while(1)
     {
 			HAL_GPIO_TogglePin(GPIOC,GPIO_PIN_13);
-			vTaskDelay(500);
+			vTaskDelay(100);
     }
 }
 
@@ -71,29 +97,63 @@ void usart_TaskCode( void * pvParameters )
 {
 	while(1)
 	{
-		vTaskDelay(1);
+		xSemaphoreTake(usart_Semaphore,portMAX_DELAY);
+		
+		printf("systick:[%d]\r\n",HAL_GetTick());
+		
+		xSemaphoreGive(usart_Semaphore);
+		vTaskDelay(1000);
 	}
 }
 
-void lcd_TaskCode( void * pvParameters )
+void recv_usart_TaskCode( void * pvParameters )
 {
-	unsigned	int count=0;  
 	while(1)
 	{
-		count++;
-		LCD_DisplayString(20,1,"stm32h750xbh6>>");
-		LCD_DisplayNumber(20,30,count,6);
-		vTaskDelay(10);
+		HAL_UART_Receive(&huart1,&recv_uart_buf, 1, 0xFFFF);
+		printf("recv_uart_buf:[%d]\r\n",recv_uart_buf);
+		printf("recv_uart_buf:[%c]\r\n",recv_uart_buf);
+		vTaskDelay(1);
 	}
 }
+// 串口接收回调函数
+void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
+{
+    if(huart->Instance == USART1)
+    {
+        HAL_UART_Receive_IT(&huart1,&recv_uart_buf, 1);
+
+    }
+}
+
+void lcd_TaskCode( void * pvParameters )
+{ 
+	main_win.background_color = GUI_BLUE;
+	main_win.width=100;
+	main_win.height=100;
+	main_win.x=100;
+	main_win.y=100;
+	uint32_t count=0;
+	while(1)
+	{
+		FreeGUI_Handler(&main_win);
+		count++;
+		LCD_DisplayNumber(20,1,count,6);
+		vTaskDelay(1000);
+	}
+}
+
 void device_testing_TaskCode(void * pvParameters)
 {
+	xSemaphoreTake(usart_Semaphore,portMAX_DELAY);
 	sd_test();
 	sdram_test();
+	xSemaphoreGive(usart_Semaphore);
 	while(1)
 	{
 		vTaskDelay(1);
 	}
+	
 }
 void sd_test(void)
 {
@@ -219,7 +279,7 @@ void sdram_test( void )
 	
 // 数据校验 >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>   
 				
-	printf("进行数据校验>>>\r\n");
+	printf("进行数据校验\r\n");
 	
 	for(i = 0; i < SDRAM_Size/2;i++ )
 	{
