@@ -1,5 +1,5 @@
 #include "rtos_task.h"
-#define Task_num 5
+#define Task_num 10
 Free_window main_win;
 //线程状态
 BaseType_t Returned[Task_num];
@@ -10,6 +10,7 @@ TaskHandle_t usartHandle = NULL;
 TaskHandle_t recv_usartHandle = NULL;
 TaskHandle_t lcdtHandle = NULL;
 TaskHandle_t device_testingramtHandle = NULL;
+TaskHandle_t fatfsHandle = NULL;
 //函数定义
 void sd_test(void);
 void sdram_test( void );
@@ -20,7 +21,8 @@ void recv_usart_TaskCode( void * pvParameters );
 void lcd_TaskCode( void * pvParameters );
 void device_testing_TaskCode(void * pvParameters);
 void usart_timer_CallbackFunction( TimerHandle_t xTimer );
-	
+void fatfs_TaskCode(void * pvParameters);
+void fatfs_test(void);
 //变量
 #define	NumOf_Blocks	64
 #define Test_BlockSize  ((BLOCKSIZE * NumOf_Blocks) >> 2)	 //定义数据大小,SD块大小为512字节，因为是32位的数组，所以这里除以4
@@ -33,6 +35,17 @@ uint32_t SD_WriteBuffer[Test_BlockSize];	//	写数据数组
 uint32_t SD_ReadBuffer[Test_BlockSize];	//	读数据数组
 
 unsigned char recv_uart_buf=0;
+
+FATFS 	SD_FatFs; 		// 文件系统对象
+FRESULT 	MyFile_Res;    // 操作结果 
+char SDPath[4];			// SD卡逻辑驱动路径
+BYTE workbuffer[512];
+uint8_t i = 0;
+uint16_t BufferSize = 0;	
+FIL	MyFile;			// 文件对象
+UINT 	MyFile_Num;		//	数据长度
+BYTE 	MyFile_WriteBuffer[] = "abc";	//要写入的数据
+BYTE 	MyFile_ReadBuffer[1024];	//要读出的数据
 //信号量/互斥锁
 SemaphoreHandle_t usart_Semaphore;//创建串口互斥锁
 SemaphoreHandle_t lcd_Semaphore;//创建互斥锁
@@ -42,7 +55,7 @@ TimerHandle_t usart_Timers;
 void FreeRTOS_Start( void )
 {
 	sys_init();
-	
+	fatfs_test();
 	//创建互斥锁
 	usart_Semaphore=xSemaphoreCreateMutex();
 	
@@ -52,9 +65,10 @@ void FreeRTOS_Start( void )
 	//创建线程
 	Returned[0] = xTaskCreate(led_TaskCode,"led_Task",64,NULL,31,&ledHandle );
 	Returned[1] = xTaskCreate(usart_TaskCode,"usart_Task",128,NULL,2,&usartHandle );
-	Returned[2] = xTaskCreate(lcd_TaskCode,"lcd_Task",256,NULL,3,&lcdtHandle );
-	Returned[3] = xTaskCreate(device_testing_TaskCode,"device_testing",2048,NULL,4,&device_testingramtHandle );
-	Returned[4] = xTaskCreate(recv_usart_TaskCode,"recv_usart_Task",128,NULL,2,&usartHandle );
+	Returned[2] = xTaskCreate(recv_usart_TaskCode,"recv_usart_Task",128,NULL,2,&usartHandle );
+	Returned[3] = xTaskCreate(lcd_TaskCode,"lcd_Task",256,NULL,3,&lcdtHandle );
+	Returned[4] = xTaskCreate(device_testing_TaskCode,"device_testing",2048,NULL,4,&device_testingramtHandle );
+	Returned[5] = xTaskCreate(fatfs_TaskCode,"fatfs_Task_Task",512,NULL,30,&fatfsHandle );
 	
 	printf("thread state:\t");//打印线程状态
 	for(int i=0;i<Task_num;i++)
@@ -110,7 +124,7 @@ void recv_usart_TaskCode( void * pvParameters )
 {
 	while(1)
 	{
-		HAL_UART_Receive(&huart1,&recv_uart_buf, 1, 0xFFFF);
+		HAL_UART_Receive(&huart1,&recv_uart_buf,1,0xFFFF);
 		printf("recv_uart_buf:[%d]\r\n",recv_uart_buf);
 		printf("recv_uart_buf:[%c]\r\n",recv_uart_buf);
 		vTaskDelay(1);
@@ -122,13 +136,11 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
     if(huart->Instance == USART1)
     {
         HAL_UART_Receive_IT(&huart1,&recv_uart_buf, 1);
-
     }
 }
 
 void lcd_TaskCode( void * pvParameters )
 { 
-	main_win.background_color = GUI_BLUE;
 	main_win.width=100;
 	main_win.height=100;
 	main_win.x=100;
@@ -153,7 +165,102 @@ void device_testing_TaskCode(void * pvParameters)
 	{
 		vTaskDelay(1);
 	}
+}
+
+void fatfs_TaskCode(void * pvParameters)
+{
+	fatfs_test();
+	while(1)
+	{
+		vTaskDelay(10);
+	}
+}
+
+void fatfs_test(void)
+{
+	BYTE work[FF_MAX_SS]; 
 	
+	MyFile_Res = f_mount(&SD_FatFs,"0:",1);	//	挂载SD卡
+	
+	if (MyFile_Res == FR_OK)	//判断是否挂载成功
+	{
+		printf("\r\nSD文件系统挂载成功\r\n");
+	}
+	else		
+	{
+		printf("SD卡还未创建文件系统，即将格式化\r\n");
+		
+		MyFile_Res = f_mkfs("0:",NULL,work,sizeof (work));
+		
+		if (MyFile_Res == FR_OK)		//判断是否格式化成功
+		{
+			printf("SD卡格式化成功！\r\n");
+			MyFile_Res = f_mount(NULL,"0:",1);	//	挂载SD卡
+			MyFile_Res = f_mount(&SD_FatFs,"0:",1);	//	挂载SD卡
+			printf("mount retutn res[%d]\r\n",MyFile_Res);
+		}
+
+		else
+			printf("格式化失败，请检查或更换SD卡！\r\n");
+	}
+	
+	
+	printf("-------------FatFs 文件创建和写入测试---------------\r\n");
+	
+	MyFile_Res = f_open(&MyFile,"0:a.txt",FA_CREATE_ALWAYS | FA_WRITE);	//打开文件，若不存在则创建该文件
+	if(MyFile_Res == FR_OK)
+	{
+		printf("文件打开/创建成功，准备写入数据...\r\n");
+		
+		MyFile_Res = f_write(&MyFile,MyFile_WriteBuffer,sizeof(MyFile_WriteBuffer),&MyFile_Num);	//向文件写入数据
+		if (MyFile_Res == FR_OK)	
+		{
+			printf("写入成功，写入内容为：\r\n");
+			MyFile_Res=f_sync(&MyFile);
+			printf("f_sync return (%d)\r\n",MyFile_Res);
+			printf("%s\r\n",MyFile_WriteBuffer);
+		}
+		else
+		{
+			printf("文件写入失败，请检查SD卡或重新格式化!\r\n");
+			f_close(&MyFile);	  //关闭文件			
+		}
+		f_close(&MyFile);	  //关闭文件			
+	}
+	else
+	{
+		printf("无法打开/创建文件，请检查SD卡或重新格式化!\r\n");
+		f_close(&MyFile);	  //关闭文件		
+	}
+	
+	printf("-------------FatFs 文件读取测试---------------\r\n");	
+	
+	BufferSize = sizeof(MyFile_WriteBuffer)/sizeof(BYTE);									// 计算写入的数据长度
+	MyFile_Res = f_open(&MyFile,"0:a.txt",FA_OPEN_EXISTING | FA_READ);	//打开文件，若不存在则创建该文件
+	printf("open return res %d\r\n",MyFile_Res);
+	MyFile_Res = f_read(&MyFile,MyFile_ReadBuffer,BufferSize,&MyFile_Num);			// 读取文件
+	if(MyFile_Res == FR_OK)
+	{
+		printf("文件读取成功，正在校验数据...\r\n");
+		
+		for(i=0;i<BufferSize;i++)
+		{
+			if(MyFile_WriteBuffer[i] != MyFile_ReadBuffer[i])		// 校验数据
+			{
+				printf("校验失败，请检查SD卡或重新格式化!\r\n");
+				f_close(&MyFile);	  //关闭文件	
+			}
+		}
+		printf("校验成功，读出的数据为：\r\n");
+		printf("%s\r\n",MyFile_ReadBuffer);
+	}	
+	else
+	{
+		printf("无法读取文件，请检查SD卡或重新格式化![%d]\r\n",MyFile_Res	);
+		f_close(&MyFile);	  //关闭文件		
+	}	
+	
+	f_close(&MyFile);	  //关闭文件	
 }
 void sd_test(void)
 {

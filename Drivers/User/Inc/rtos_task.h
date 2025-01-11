@@ -16,6 +16,9 @@
 
 #include "FreeGUI.h"
 
+#include "ff.h"
+#include "ffconf.h"
+#include "diskio.h"
 void FreeRTOS_Start(void);
 void sys_init(void);
 #endif

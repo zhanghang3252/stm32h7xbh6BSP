@@ -64,3 +64,7 @@ stm32h750xbh6\rtos_task.o: ..\Drivers\FreeRTOS\include\semphr.h
 stm32h750xbh6\rtos_task.o: ..\Drivers\FreeRTOS\include\queue.h
 stm32h750xbh6\rtos_task.o: ..\Drivers\FreeRTOS\include\timers.h
 stm32h750xbh6\rtos_task.o: ..\Drivers\FreeGUI\FreeGUI.h
+stm32h750xbh6\rtos_task.o: ..\Drivers\FATFS\source\ff.h
+stm32h750xbh6\rtos_task.o: ..\Drivers\FATFS\source\ffconf.h
+stm32h750xbh6\rtos_task.o: ..\Drivers\FATFS\source\ffconf.h
+stm32h750xbh6\rtos_task.o: ..\Drivers\FATFS\source\diskio.h
