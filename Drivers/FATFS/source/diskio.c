@@ -26,8 +26,7 @@ DSTATUS disk_status (
 
 	switch (pdrv) {
 	case DEV_SD :
-		stat = RES_OK;
-
+		stat = BSP_SD_GetCardState(pdrv);
 		return stat;
 	}
 	return STA_NOINIT;
@@ -49,9 +48,7 @@ DSTATUS disk_initialize (
 	case DEV_SD :
 		stat = BSP_SD_Init(SD_Instance);	//SD卡初始化
 		if( stat == BSP_ERROR_NONE )	//检测是否初始化成功
-		{		
 			printf("SD卡初始化成功 \r\n");	
-		}
 		else
 		printf("检测不到SD卡，ERROR: %d\r\n",stat);	
 		return stat;
@@ -77,12 +74,9 @@ DRESULT disk_read (
 	switch (pdrv) {
 	case DEV_SD :
 		// translate the arguments here
-
 		res = BSP_SD_ReadBlocks(pdrv,(uint32_t*)buff,sector, count);
-
 		return res;
 	}
-
 	return RES_PARERR;
 }
 
@@ -132,7 +126,6 @@ DRESULT disk_ioctl (
 
 	switch (pdrv) {
 	case DEV_SD :
-
 
 		return res;
 	}

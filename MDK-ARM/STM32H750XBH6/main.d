@@ -42,13 +42,15 @@ stm32h750xbh6\main.o: ../Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_spi.h
 stm32h750xbh6\main.o: ../Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_spi_ex.h
 stm32h750xbh6\main.o: ../Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_uart.h
 stm32h750xbh6\main.o: ../Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_uart_ex.h
+stm32h750xbh6\main.o: ..\Drivers\User\Inc\rtos_task.h
+stm32h750xbh6\main.o: C:\APP\Keil_v5\ARM\ARMCC\Bin\..\include\stdio.h
+stm32h750xbh6\main.o: C:\APP\Keil_v5\ARM\ARMCC\Bin\..\include\string.h
 stm32h750xbh6\main.o: ..\Drivers\User\Inc\led.h
 stm32h750xbh6\main.o: ..\Drivers\User\Inc\usart.h
-stm32h750xbh6\main.o: C:\APP\Keil_v5\ARM\ARMCC\Bin\..\include\stdio.h
+stm32h750xbh6\main.o: ..\Drivers\User\Inc\usart2.h
 stm32h750xbh6\main.o: ..\Drivers\User\Inc\lcd_spi_169.h
 stm32h750xbh6\main.o: ..\Drivers\User\Inc\lcd_fonts.h
 stm32h750xbh6\main.o: ..\Drivers\User\Inc\lcd_image.h
-stm32h750xbh6\main.o: ..\Drivers\User\Inc\rtos_task.h
 stm32h750xbh6\main.o: ..\Drivers\User\Inc\sdmmc_sd.h
 stm32h750xbh6\main.o: ..\Drivers\User\Inc\sdram.h
 stm32h750xbh6\main.o: ..\Drivers\FreeRTOS\include\FreeRTOS.h
@@ -63,7 +65,6 @@ stm32h750xbh6\main.o: ..\Drivers\FreeRTOS\include\list.h
 stm32h750xbh6\main.o: ..\Drivers\FreeRTOS\include\semphr.h
 stm32h750xbh6\main.o: ..\Drivers\FreeRTOS\include\queue.h
 stm32h750xbh6\main.o: ..\Drivers\FreeRTOS\include\timers.h
-stm32h750xbh6\main.o: ..\Drivers\FreeGUI\FreeGUI.h
 stm32h750xbh6\main.o: ..\Drivers\FATFS\source\ff.h
 stm32h750xbh6\main.o: ..\Drivers\FATFS\source\ffconf.h
 stm32h750xbh6\main.o: ..\Drivers\FATFS\source\ffconf.h

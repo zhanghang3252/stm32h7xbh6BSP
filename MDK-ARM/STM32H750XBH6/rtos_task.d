@@ -1,6 +1,7 @@
 stm32h750xbh6\rtos_task.o: ..\Drivers\User\Src\rtos_task.c
 stm32h750xbh6\rtos_task.o: ..\Drivers\User\Inc\rtos_task.h
 stm32h750xbh6\rtos_task.o: C:\APP\Keil_v5\ARM\ARMCC\Bin\..\include\stdio.h
+stm32h750xbh6\rtos_task.o: C:\APP\Keil_v5\ARM\ARMCC\Bin\..\include\string.h
 stm32h750xbh6\rtos_task.o: ../Core/Inc/main.h
 stm32h750xbh6\rtos_task.o: ../Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal.h
 stm32h750xbh6\rtos_task.o: ../Core/Inc/stm32h7xx_hal_conf.h
@@ -46,6 +47,7 @@ stm32h750xbh6\rtos_task.o: ../Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_uar
 stm32h750xbh6\rtos_task.o: ../Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_uart_ex.h
 stm32h750xbh6\rtos_task.o: ..\Drivers\User\Inc\led.h
 stm32h750xbh6\rtos_task.o: ..\Drivers\User\Inc\usart.h
+stm32h750xbh6\rtos_task.o: ..\Drivers\User\Inc\usart2.h
 stm32h750xbh6\rtos_task.o: ..\Drivers\User\Inc\lcd_spi_169.h
 stm32h750xbh6\rtos_task.o: ..\Drivers\User\Inc\lcd_fonts.h
 stm32h750xbh6\rtos_task.o: ..\Drivers\User\Inc\lcd_image.h
@@ -63,7 +65,6 @@ stm32h750xbh6\rtos_task.o: ..\Drivers\FreeRTOS\include\list.h
 stm32h750xbh6\rtos_task.o: ..\Drivers\FreeRTOS\include\semphr.h
 stm32h750xbh6\rtos_task.o: ..\Drivers\FreeRTOS\include\queue.h
 stm32h750xbh6\rtos_task.o: ..\Drivers\FreeRTOS\include\timers.h
-stm32h750xbh6\rtos_task.o: ..\Drivers\FreeGUI\FreeGUI.h
 stm32h750xbh6\rtos_task.o: ..\Drivers\FATFS\source\ff.h
 stm32h750xbh6\rtos_task.o: ..\Drivers\FATFS\source\ffconf.h
 stm32h750xbh6\rtos_task.o: ..\Drivers\FATFS\source\ffconf.h

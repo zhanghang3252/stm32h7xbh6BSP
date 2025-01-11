@@ -340,7 +340,7 @@
               <MiscControls></MiscControls>
               <Define>USE_HAL_DRIVER,STM32H750xx</Define>
               <Undefine></Undefine>
-              <IncludePath>../Core/Inc;../Drivers/STM32H7xx_HAL_Driver/Inc;../Drivers/STM32H7xx_HAL_Driver/Inc/Legacy;../Drivers/CMSIS/Device/ST/STM32H7xx/Include;../Drivers/CMSIS/Include;..\Drivers\User\Inc;..\Drivers\FreeRTOS\include;..\Drivers\FreeRTOS\portable\RVDS\ARM_CM7\r0p1;..\Drivers\FreeGUI;..\Drivers\FATFS\source</IncludePath>
+              <IncludePath>../Core/Inc;../Drivers/STM32H7xx_HAL_Driver/Inc;../Drivers/STM32H7xx_HAL_Driver/Inc/Legacy;../Drivers/CMSIS/Device/ST/STM32H7xx/Include;../Drivers/CMSIS/Include;..\Drivers\User\Inc;..\Drivers\FreeRTOS\include;..\Drivers\FreeRTOS\portable\RVDS\ARM_CM7\r0p1;..\Drivers\FreeGUI;..\Drivers\FATFS\source;..\Drivers\BLE</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -443,6 +443,16 @@
               <FileName>sdram.h</FileName>
               <FileType>5</FileType>
               <FilePath>..\Drivers\User\Inc\sdram.h</FilePath>
+            </File>
+            <File>
+              <FileName>usart2.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Drivers\User\Src\usart2.c</FilePath>
+            </File>
+            <File>
+              <FileName>usart2.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\Drivers\User\Inc\usart2.h</FilePath>
             </File>
           </Files>
         </Group>
@@ -1133,21 +1143,6 @@
               <FileName>FreeRTOSConfig.h</FileName>
               <FileType>5</FileType>
               <FilePath>..\Drivers\FreeRTOS\include\FreeRTOSConfig.h</FilePath>
-            </File>
-          </Files>
-        </Group>
-        <Group>
-          <GroupName>Drivers/FreeGUI</GroupName>
-          <Files>
-            <File>
-              <FileName>FreeGUI.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\Drivers\FreeGUI\FreeGUI.c</FilePath>
-            </File>
-            <File>
-              <FileName>FreeGUI.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>..\Drivers\FreeGUI\FreeGUI.h</FilePath>
             </File>
           </Files>
         </Group>
@@ -1624,6 +1619,16 @@
               <FileType>5</FileType>
               <FilePath>..\Drivers\User\Inc\sdram.h</FilePath>
             </File>
+            <File>
+              <FileName>usart2.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Drivers\User\Src\usart2.c</FilePath>
+            </File>
+            <File>
+              <FileName>usart2.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\Drivers\User\Inc\usart2.h</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -2313,21 +2318,6 @@
               <FileName>FreeRTOSConfig.h</FileName>
               <FileType>5</FileType>
               <FilePath>..\Drivers\FreeRTOS\include\FreeRTOSConfig.h</FilePath>
-            </File>
-          </Files>
-        </Group>
-        <Group>
-          <GroupName>Drivers/FreeGUI</GroupName>
-          <Files>
-            <File>
-              <FileName>FreeGUI.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\Drivers\FreeGUI\FreeGUI.c</FilePath>
-            </File>
-            <File>
-              <FileName>FreeGUI.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>..\Drivers\FreeGUI\FreeGUI.h</FilePath>
             </File>
           </Files>
         </Group>
