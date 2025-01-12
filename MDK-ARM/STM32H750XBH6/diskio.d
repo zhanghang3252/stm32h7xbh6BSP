@@ -43,6 +43,8 @@ stm32h750xbh6\diskio.o: ../Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_sdram.
 stm32h750xbh6\diskio.o: ../Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_ll_fmc.h
 stm32h750xbh6\diskio.o: ../Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_spi.h
 stm32h750xbh6\diskio.o: ../Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_spi_ex.h
+stm32h750xbh6\diskio.o: ../Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_tim.h
+stm32h750xbh6\diskio.o: ../Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_tim_ex.h
 stm32h750xbh6\diskio.o: ../Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_uart.h
 stm32h750xbh6\diskio.o: ../Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_uart_ex.h
 stm32h750xbh6\diskio.o: C:\APP\Keil_v5\ARM\ARMCC\Bin\..\include\stdio.h

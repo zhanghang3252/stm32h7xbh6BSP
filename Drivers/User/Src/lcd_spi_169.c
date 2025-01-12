@@ -26,7 +26,7 @@
 ***/
 
 #include "lcd_spi_169.h"
-
+DMA_HandleTypeDef hdma_spi5_tx;
 SPI_HandleTypeDef hspi5;	      // SPI_HandleTypeDef 结构体变量
 
 #define  LCD_SPI hspi5           // SPI局部宏，方便修改和移植
@@ -69,6 +69,10 @@ void HAL_SPI_MspInit(SPI_HandleTypeDef* hspi)
    GPIO_InitTypeDef GPIO_InitStruct = {0};
    if(hspi->Instance==SPI5)
    {
+		 __HAL_RCC_DMA1_CLK_DISABLE();
+		 HAL_NVIC_DisableIRQ(DMA1_Stream0_IRQn);
+		 HAL_DMA_DeInit(&hdma_spi5_tx);
+		 
 		__HAL_RCC_SPI5_CLK_ENABLE();			// 使能SPI5时钟
 
 		__HAL_RCC_GPIOK_CLK_ENABLE();			// 使能 SPI5 GPIO
@@ -77,7 +81,7 @@ void HAL_SPI_MspInit(SPI_HandleTypeDef* hspi)
 		
       GPIO_LDC_Backlight_CLK_ENABLE;   // 使能 背光        引脚时钟
       GPIO_LDC_DC_CLK_ENABLE;          // 使能 数据指令选择 引脚时钟
-
+		 
 /******************************************************  
 
 		PK0     ------> SPI5_SCK
@@ -133,31 +137,56 @@ void MX_SPI5_Init(void)
 {
 	LCD_SPI.Instance 									= SPI5;							   					//	使用SPI5
 	LCD_SPI.Init.Mode 								= SPI_MODE_MASTER;            					//	主机模式
-	LCD_SPI.Init.Direction 							= SPI_DIRECTION_1LINE;       					   //	单线
-	LCD_SPI.Init.DataSize 							= SPI_DATASIZE_8BIT;          					//	8位数据宽度
-	LCD_SPI.Init.CLKPolarity 						= SPI_POLARITY_LOW;           					//	CLK空闲时保持低电平
-	LCD_SPI.Init.CLKPhase 							= SPI_PHASE_1EDGE;            					//	数据在CLK第一个边沿有效
+	LCD_SPI.Init.Direction 						= SPI_DIRECTION_1LINE;       					   //	单线
+	LCD_SPI.Init.DataSize 						= SPI_DATASIZE_8BIT;          					//	8位数据宽度
+	LCD_SPI.Init.CLKPolarity 					= SPI_POLARITY_LOW;           					//	CLK空闲时保持低电平
+	LCD_SPI.Init.CLKPhase 						= SPI_PHASE_1EDGE;            					//	数据在CLK第一个边沿有效
 	LCD_SPI.Init.NSS 									= SPI_NSS_HARD_OUTPUT;        					//	使用硬件片选   
 	
 // SPI的内核时钟设置为120M，再经过2分频得到 60M 的SCK驱动时钟
-	LCD_SPI.Init.BaudRatePrescaler 				= SPI_BAUDRATEPRESCALER_2;
+	LCD_SPI.Init.BaudRatePrescaler 						= SPI_BAUDRATEPRESCALER_2;
 	
-	LCD_SPI.Init.FirstBit	 						= SPI_FIRSTBIT_MSB;									//	高位在先
-	LCD_SPI.Init.TIMode 								= SPI_TIMODE_DISABLE;         					//	禁止TI模式
-	LCD_SPI.Init.CRCCalculation					= SPI_CRCCALCULATION_DISABLE; 					//	禁止CRC
-	LCD_SPI.Init.CRCPolynomial 					= 0x0;                        					// CRC校验项，这里用不到				
-	LCD_SPI.Init.NSSPMode 							= SPI_NSS_PULSE_ENABLE;      						//	使用片选脉冲模式
-	LCD_SPI.Init.NSSPolarity 						= SPI_NSS_POLARITY_LOW;      						//	片选低电平有效
-	LCD_SPI.Init.FifoThreshold 					= SPI_FIFO_THRESHOLD_02DATA;  					//	FIFO阈值
+	LCD_SPI.Init.FirstBit	 										= SPI_FIRSTBIT_MSB;									//	高位在先
+	LCD_SPI.Init.TIMode 											= SPI_TIMODE_DISABLE;         					//	禁止TI模式
+	LCD_SPI.Init.CRCCalculation								= SPI_CRCCALCULATION_DISABLE; 					//	禁止CRC
+	LCD_SPI.Init.CRCPolynomial 								= 0x0;                        					// CRC校验项，这里用不到				
+	LCD_SPI.Init.NSSPMode 										= SPI_NSS_PULSE_ENABLE;      						//	使用片选脉冲模式
+	LCD_SPI.Init.NSSPolarity 									= SPI_NSS_POLARITY_LOW;      						//	片选低电平有效
+	LCD_SPI.Init.FifoThreshold 								= SPI_FIFO_THRESHOLD_02DATA;  					//	FIFO阈值
 	LCD_SPI.Init.TxCRCInitializationPattern 	= SPI_CRC_INITIALIZATION_ALL_ZERO_PATTERN;   // 发送端CRC初始化模式，这里用不到
 	LCD_SPI.Init.RxCRCInitializationPattern 	= SPI_CRC_INITIALIZATION_ALL_ZERO_PATTERN;   // 接收端CRC初始化模式，这里用不到
-	LCD_SPI.Init.MasterSSIdleness 				= SPI_MASTER_SS_IDLENESS_00CYCLE;            // 额外延迟周期为0
-	LCD_SPI.Init.MasterInterDataIdleness 		= SPI_MASTER_INTERDATA_IDLENESS_00CYCLE;     // 主机模式下，两个数据帧之间的延迟周期
-	LCD_SPI.Init.MasterReceiverAutoSusp 		= SPI_MASTER_RX_AUTOSUSP_DISABLE;            // 禁止自动接收管理
-	LCD_SPI.Init.MasterKeepIOState 				= SPI_MASTER_KEEP_IO_STATE_DISABLE; 	 		//	主机模式下，禁止SPI保持当前引脚状态
-	LCD_SPI.Init.IOSwap 								= SPI_IO_SWAP_DISABLE;				            // 不交换MOSI和MISO
+	LCD_SPI.Init.MasterSSIdleness 						= SPI_MASTER_SS_IDLENESS_00CYCLE;            // 额外延迟周期为0
+	LCD_SPI.Init.MasterInterDataIdleness 			= SPI_MASTER_INTERDATA_IDLENESS_00CYCLE;     // 主机模式下，两个数据帧之间的延迟周期
+	LCD_SPI.Init.MasterReceiverAutoSusp 			= SPI_MASTER_RX_AUTOSUSP_DISABLE;            // 禁止自动接收管理
+	LCD_SPI.Init.MasterKeepIOState 						= SPI_MASTER_KEEP_IO_STATE_DISABLE; 	 		//	主机模式下，禁止SPI保持当前引脚状态
+	LCD_SPI.Init.IOSwap 											= SPI_IO_SWAP_DISABLE;				            // 不交换MOSI和MISO
+	
+	HAL_NVIC_SetPriority(SPI5_IRQn, 0, 0);
+	HAL_NVIC_EnableIRQ(SPI5_IRQn);;
 	
    HAL_SPI_Init(&LCD_SPI);
+	 
+	/* SPI5 DMA Init */
+	/* SPI5_TX Init */
+	__HAL_RCC_DMA1_CLK_ENABLE();
+
+	hdma_spi5_tx.Instance = DMA1_Stream0;
+	hdma_spi5_tx.Init.Request = DMA_REQUEST_SPI5_TX;
+	hdma_spi5_tx.Init.Direction = DMA_MEMORY_TO_PERIPH;
+	hdma_spi5_tx.Init.PeriphInc = DMA_PINC_DISABLE;
+	hdma_spi5_tx.Init.MemInc = DMA_MINC_ENABLE;
+	hdma_spi5_tx.Init.PeriphDataAlignment = DMA_PDATAALIGN_BYTE;
+	hdma_spi5_tx.Init.MemDataAlignment = DMA_MDATAALIGN_BYTE;
+	hdma_spi5_tx.Init.Mode = DMA_NORMAL;
+	hdma_spi5_tx.Init.Priority = DMA_PRIORITY_LOW;
+	hdma_spi5_tx.Init.FIFOMode = DMA_FIFOMODE_ENABLE;
+	HAL_NVIC_SetPriority(DMA1_Stream0_IRQn, 0, 0);
+	HAL_NVIC_EnableIRQ(DMA1_Stream0_IRQn);
+	if (HAL_DMA_Init(&hdma_spi5_tx) != 	HAL_OK)
+	{
+		Error_Handler();
+	}
+
 }
 
 /****************************************************************************************************************************************
@@ -171,9 +200,18 @@ void MX_SPI5_Init(void)
 
 void  LCD_WriteCommand(uint8_t lcd_command)
 {
-   LCD_DC_Command;     // 数据指令选择 引脚输出低电平，代表本次传输 指令
-
-   HAL_SPI_Transmit(&LCD_SPI, &lcd_command, 1, 1000); // 启动SPI传输
+	uint16_t res=0;
+	LCD_DC_Command;     // 数据指令选择 引脚输出低电平，代表本次传输 指令
+	
+	#if(USE_DMA == 1)
+	res=HAL_SPI_Transmit_DMA(&LCD_SPI, &lcd_command, 1);
+	#else
+	res=HAL_SPI_Transmit(&LCD_SPI, &lcd_command, 1, 1000); // 启动SPI传输
+	#endif
+	
+	#if(USE_DEBUG == 1)
+	printf("LCD_WriteCommand res:%d\r\n",res);
+	#endif
 }
 
 /****************************************************************************************************************************************
@@ -187,9 +225,18 @@ void  LCD_WriteCommand(uint8_t lcd_command)
 
 void  LCD_WriteData_8bit(uint8_t lcd_data)
 {
-   LCD_DC_Data;     // 数据指令选择 引脚输出高电平，代表本次传输 数据
-
-   HAL_SPI_Transmit(&LCD_SPI, &lcd_data, 1, 1000) ; // 启动SPI传输
+	uint16_t res=0;
+	LCD_DC_Data;     // 数据指令选择 引脚输出高电平，代表本次传输 数据
+	
+	#if(USE_DMA == 1)
+	res=HAL_SPI_Transmit_DMA(&LCD_SPI, &lcd_data, 1);
+	#else
+	res=HAL_SPI_Transmit(&LCD_SPI, &lcd_data, 1, 1000) ; // 启动SPI传输
+	#endif
+	
+	#if(USE_DEBUG == 1)
+	printf("LCD_WriteData_8bit res:%d\r\n",res);
+	#endif
 }
 
 /****************************************************************************************************************************************
@@ -203,19 +250,54 @@ void  LCD_WriteData_8bit(uint8_t lcd_data)
 
 void  LCD_WriteData_16bit(uint16_t lcd_data)
 {
-   uint8_t lcd_data_buff[2];    // 数据发送区
-   LCD_DC_Data;      // 数据指令选择 引脚输出高电平，代表本次传输 数据
- 
-   lcd_data_buff[0] = lcd_data>>8;  // 将数据拆分
-   lcd_data_buff[1] = lcd_data;
-		
-	HAL_SPI_Transmit(&LCD_SPI, lcd_data_buff, 2, 1000) ;   // 启动SPI传输
+	uint8_t lcd_data_buff[2];
+	uint16_t res=0;    // 数据发送区
+	LCD_DC_Data;      // 数据指令选择 引脚输出高电平，代表本次传输 数据
+
+	lcd_data_buff[0] = lcd_data>>8;  // 将数据拆分
+	lcd_data_buff[1] = lcd_data;
 	
-	// 改回8位数据宽度，因为指令和部分数据都是按照8位传输的
-	LCD_SPI.Init.DataSize 	= SPI_DATASIZE_8BIT;    //	8位数据宽度
-   HAL_SPI_Init(&LCD_SPI);	
+	#if(USE_DMA == 1)
+	res=HAL_SPI_Transmit_DMA(&LCD_SPI, lcd_data_buff, 2);
+	#else
+	res=HAL_SPI_Transmit(&LCD_SPI, lcd_data_buff, 2, 1000) ;   // 启动SPI传输
+	#endif
+	
+	#if(USE_DEBUG == 1)
+	printf("LCD_WriteData_16bit res:%d\r\n",res);
+	#endif
 }
 
+/****************************************************************************************************************************************
+*	函 数 名: LCD_WriteData_32bit
+*
+*	入口参数: lcd_data - 需要写入的数据，32位
+*
+*	函数功能: 写入16位数据
+*	
+****************************************************************************************************************************************/
+
+void  LCD_WriteData_32bit(uint32_t lcd_data)
+{
+	uint8_t lcd_data_buff[4];
+	uint16_t res=0;    // 数据发送区
+	LCD_DC_Data;      // 数据指令选择 引脚输出高电平，代表本次传输 数据
+
+	lcd_data_buff[0] = lcd_data>>18;  // 将数据拆分
+	lcd_data_buff[1] = lcd_data>>16;
+	lcd_data_buff[2] = lcd_data>>8;  // 将数据拆分
+	lcd_data_buff[3] = lcd_data;
+	
+	#if(USE_DMA == 1)
+	res=HAL_SPI_Transmit_DMA(&LCD_SPI, lcd_data_buff, 2);
+	#else
+	res=HAL_SPI_Transmit(&LCD_SPI, lcd_data_buff, 4, 1000) ;   // 启动SPI传输
+	#endif
+	
+	#if(USE_DEBUG == 1)
+	printf("LCD_WriteData_16bit res:%d\r\n",res);
+	#endif
+}
 /****************************************************************************************************************************************
 *	函 数 名: LCD_WriteBuff
 *
@@ -227,17 +309,38 @@ void  LCD_WriteData_16bit(uint16_t lcd_data)
 
 void  LCD_WriteBuff(uint16_t *DataBuff, uint16_t DataSize)
 {
+	uint16_t res=0;
 	LCD_DC_Data;     // 数据指令选择 引脚输出高电平，代表本次传输 数据	
 
-// 修改为16位数据宽度，写入数据更加效率，不需要拆分	
-   LCD_SPI.Init.DataSize 	= SPI_DATASIZE_16BIT;   //	16位数据宽度
-   HAL_SPI_Init(&LCD_SPI);		
+	// 修改为16位数据宽度，写入数据更加效率，不需要拆分	
+	LCD_SPI.Init.DataSize 	= SPI_DATASIZE_16BIT;   //	16位数据宽度
+	HAL_SPI_Init(&LCD_SPI);		
 	
-	HAL_SPI_Transmit(&LCD_SPI, (uint8_t *)DataBuff, DataSize, 1000) ; // 启动SPI传输
+	#if(USE_DMA == 1)
+	res=HAL_SPI_Transmit_DMA(&LCD_SPI, (uint8_t *)DataBuff, DataSize) ; // 启动SPI传输
+	#else
+	res=HAL_SPI_Transmit(&LCD_SPI, (uint8_t *)DataBuff, DataSize,1000) ; // 启动SPI传输
+	#endif
 	
-// 改回8位数据宽度，因为指令和部分数据都是按照8位传输的
+	#if(USE_DEBUG == 1)
+	printf("LCD_WriteBuff res:%d\r\n",res);
+	#endif
+	
+	// 改回8位数据宽度，因为指令和部分数据都是按照8位传输的
 	LCD_SPI.Init.DataSize 	= SPI_DATASIZE_8BIT;    //	8位数据宽度
-   HAL_SPI_Init(&LCD_SPI);	
+	HAL_SPI_Init(&LCD_SPI);	
+}
+
+//SPI发送完成回调函数
+void HAL_SPI_TxCpltCallback(SPI_HandleTypeDef *hspi)
+{
+	if(hspi->Instance == SPI5)
+	{
+		#if(USE_DEBUG == 1)
+		printf("spi send ok>>>>>>>>>>>>>>>> \r\n");
+		#endif
+		HAL_SPI_DMAStop(hspi);
+	}
 }
 
 /****************************************************************************************************************************************
@@ -249,9 +352,9 @@ void  LCD_WriteBuff(uint16_t *DataBuff, uint16_t DataSize)
 
 void SPI_LCD_Init(void)
 {
-   MX_SPI5_Init();               // 初始化SPI和控制引脚
+  MX_SPI5_Init();               // 初始化SPI和控制引脚
    
-   HAL_Delay(10);               	// 屏幕刚完成复位时（包括上电复位），需要等待至少5ms才能发送指令
+  HAL_Delay(10);               	// 屏幕刚完成复位时（包括上电复位），需要等待至少5ms才能发送指令
  	LCD_WriteCommand(0x36);       // 显存访问控制 指令，用于设置访问显存的方式
 	LCD_WriteData_8bit(0x00);     // 配置成 从上到下、从左到右，RGB像素格式
 
@@ -327,13 +430,13 @@ void SPI_LCD_Init(void)
 
  // 退出休眠指令，LCD控制器在刚上电、复位时，会自动进入休眠模式 ，因此操作屏幕之前，需要退出休眠  
 	LCD_WriteCommand(0x11);       // 退出休眠 指令
-   HAL_Delay(120);               // 需要等待120ms，让电源电压和时钟电路稳定下来
+  HAL_Delay(120);               // 需要等待120ms，让电源电压和时钟电路稳定下来
 
  // 打开显示指令，LCD控制器在刚上电、复位时，会自动关闭显示 
 	LCD_WriteCommand(0x29);       // 打开显示   	
 	
 // 以下进行一些驱动的默认设置
-   LCD_SetDirection(Direction_V);  	      //	设置显示方向
+   LCD_SetDirection(Direction_V_Flip);  	      //	设置显示方向
 	LCD_SetBackColor(LCD_WHITE);           // 设置背景色
  	LCD_SetColor(LCD_BLACK);               // 设置画笔色  
 	LCD_Clear();                           // 清屏
@@ -1197,21 +1300,50 @@ void LCD_FillCircle(uint16_t x, uint16_t y, uint16_t r)
 
 void LCD_FillRect(uint16_t x, uint16_t y, uint16_t width, uint16_t height)
 {
-   LCD_SetAddress( x, y, x+width-1, y+height-1);	// 设置坐标	
-	
+	LCD_SetAddress( x, y, x+width-1, y+height-1);	// 设置坐标	
+
 	LCD_DC_Data;     // 数据指令选择 引脚输出高电平，代表本次传输 数据	
 
-// 修改为16位数据宽度，写入数据更加效率，不需要拆分	
-   LCD_SPI.Init.DataSize 	= SPI_DATASIZE_16BIT;   //	16位数据宽度
-   HAL_SPI_Init(&LCD_SPI);		
-	
-   LCD_SPI_Transmit(&LCD_SPI, LCD.Color, width*height) ;
+	// 修改为16位数据宽度，写入数据更加效率，不需要拆分	
+	LCD_SPI.Init.DataSize 	= SPI_DATASIZE_16BIT;   //	16位数据宽度
+	HAL_SPI_Init(&LCD_SPI);		
+	LCD_SPI_Transmit(&LCD_SPI, LCD.Color, width*height) ;
 
-// 改回8位数据宽度，因为指令和部分数据都是按照8位传输的
+	// 改回8位数据宽度，因为指令和部分数据都是按照8位传输的
 	LCD_SPI.Init.DataSize 	= SPI_DATASIZE_8BIT;    //	8位数据宽度
-   HAL_SPI_Init(&LCD_SPI);
+	HAL_SPI_Init(&LCD_SPI);
 }
 
+
+/***************************************************************************************************************************************
+*	函 数 名: LCD_Fill
+*
+*	入口参数: x - 水平坐标
+*			 	 y - 垂直坐标
+*			 	 width  - 水平宽度
+*				 height -垂直宽度
+*
+*	函数功能: 在坐标 (x,y) 填充指定长宽的实心矩形
+*
+*	说    明: 要绘制的区域不能超过屏幕的显示区域
+*						 
+*****************************************************************************************************************************************/
+
+void LCD_Fill(uint16_t x, uint16_t y, uint16_t width, uint16_t height,uint32_t color)
+{
+	LCD_SetAddress( x, y, x+width-1, y+height-1);	// 设置坐标	
+	LCD_DC_Data;     // 数据指令选择 引脚输出高电平，代表本次传输 数据	
+	
+	// 修改为16位数据宽度，写入数据更加效率，不需要拆分	
+	LCD_SPI.Init.DataSize 	= SPI_DATASIZE_16BIT;   //	16位数据宽度
+	HAL_SPI_Init(&LCD_SPI);		
+	LCD_SetColor(color);
+	LCD_SPI_Transmit(&LCD_SPI, LCD.Color, width*height) ;
+
+	// 改回8位数据宽度，因为指令和部分数据都是按照8位传输的
+	LCD_SPI.Init.DataSize 	= SPI_DATASIZE_8BIT;    //	8位数据宽度
+	HAL_SPI_Init(&LCD_SPI);
+}
 
 /***************************************************************************************************************************************
 *	函 数 名: LCD_DrawImage
@@ -1683,6 +1815,21 @@ HAL_StatusTypeDef LCD_SPI_TransmitBuffer (SPI_HandleTypeDef *hspi, uint16_t *pDa
 	}
 	return errorcode;
 }
+
+void lvgl_LCD_Color_Fill(uint16_t sx, uint16_t sy, uint16_t ex, uint16_t ey, lv_color_t *color)
+{
+
+	uint32_t y=0; 
+	uint16_t height, width;
+	width = ex - sx + 1;            //得到填充的宽度
+  height = ey - sy + 1;           //高度
+	
+	LCD_SetAddress(sx,sy,ex,ey);
+	
+	LCD_WriteBuff(&color->full,width*height);
+}
+
+
 
 /**************************************************************************************************************************************************************************************************************************************************************************FANKE***/
 // 实验平台：反客 STM32H750核心板

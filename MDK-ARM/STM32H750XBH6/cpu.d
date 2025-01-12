@@ -1,9 +1,0 @@
-stm32h750xbh6\cpu.o: ..\rtthread\src\cpu.c
-stm32h750xbh6\cpu.o: ..\rtthread\include\rthw.h
-stm32h750xbh6\cpu.o: ..\rtthread\include\rtthread.h
-stm32h750xbh6\cpu.o: ..\rtthread\rtconfig.h
-stm32h750xbh6\cpu.o: ..\rtthread\include\rtthread.h
-stm32h750xbh6\cpu.o: ..\rtthread\include\rtdebug.h
-stm32h750xbh6\cpu.o: ..\rtthread\include\rtdef.h
-stm32h750xbh6\cpu.o: ..\rtthread\include\rtservice.h
-stm32h750xbh6\cpu.o: ..\rtthread\include\rtm.h

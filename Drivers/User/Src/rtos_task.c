@@ -5,96 +5,78 @@ BaseType_t Returned[Task_num];
 
 //线程句柄
 TaskHandle_t ledHandle = NULL;
-TaskHandle_t usartHandle = NULL;
+TaskHandle_t send_usartHandle = NULL;
 TaskHandle_t recv_usartHandle = NULL;
-TaskHandle_t lcdtHandle = NULL;
 TaskHandle_t device_testingramtHandle = NULL;
 TaskHandle_t bleHandle = NULL;
-
+TaskHandle_t lvgl_Handle= NULL;
 //函数声明
+void get_thread_state(void);
 void fatfs_test(void);
-void sd_test(void);
 void sdram_test( void );
 void led_TaskCode( void * pvParameters );
-void usart_TaskCode( void * pvParameters );
+void send_usart_TaskCode( void * pvParameters );
 void recv_usart_TaskCode( void * pvParameters );
-void ble_Task_TaskCode ( void * pvParameters );
-void lcd_TaskCode( void * pvParameters );
 void device_testing_TaskCode(void * pvParameters);
-void usart_timer_CallbackFunction( TimerHandle_t xTimer );
-
+void lvgl_TaskCode(void * pvParameters);
 //变量
 #define	NumOf_Blocks	64
 #define Test_BlockSize  ((BLOCKSIZE * NumOf_Blocks) >> 2)	 //定义数据大小,SD块大小为512字节，因为是32位的数组，所以这里除以4
-#define	Test_Addr 	 0x00
-#define SDRAM_Size 32*1024*1024  //32M字节
+#define	Test_Addr 	 	0x00
+#define SDRAM_Size 		32*1024*1024  //32M字节
 
-uint32_t SD_Status ; 		 //SD卡检测标志位
-uint32_t SD_WriteBuffer[Test_BlockSize];	//	写数据数组
-uint32_t SD_ReadBuffer[Test_BlockSize];	//	读数据数组
 
 unsigned char recv_uart_buf=0;
-unsigned char recv_uart2_buf;
-unsigned char recv_uart2[200];
-unsigned int  recv_uart2_len=0;
+unsigned char recv_uart2_buf=0;
 
 FATFS 	SD_FatFs; 		// 文件系统对象
 FRESULT 	MyFile_Res;    // 操作结果 
 uint16_t BufferSize = 0;	
 FIL	MyFile;			// 文件对象
 UINT 	MyFile_Num;		//	数据长度
-BYTE 	MyFile_WriteBuffer[] = "abc";	//要写入的数据
+BYTE 	MyFile_WriteBuffer[] = "hello,world";	//要写入的数据
 BYTE 	MyFile_ReadBuffer[512];	//要读出的数据
+
 //信号量/互斥锁
 SemaphoreHandle_t usart_Semaphore;//创建串口互斥锁
-SemaphoreHandle_t lcd_Semaphore;//创建互斥锁
+SemaphoreHandle_t lvgl_Semaphore;//创建串口互斥锁
 
-//定时器
-TimerHandle_t usart_Timers;
 void FreeRTOS_Start( void )
 {
 	sys_init();
 	//创建互斥锁
 	usart_Semaphore=xSemaphoreCreateMutex();
-	
-//	//创建定时器
-//	usart_Timers = xTimerCreate("usart_Timers",pdMS_TO_TICKS(100),pdTRUE,0,usart_timer_CallbackFunction);
-	
+	lvgl_Semaphore=xSemaphoreCreateMutex();
 	//创建线程
-	Returned[0] = xTaskCreate(led_TaskCode,"led_Task",64,NULL,31,&ledHandle );
-	Returned[1] = xTaskCreate(usart_TaskCode,"usart_Task",128,NULL,2,&usartHandle );
-	Returned[2] = xTaskCreate(recv_usart_TaskCode,"recv_usart_Task",128,NULL,2,&usartHandle );
-	Returned[3] = xTaskCreate(lcd_TaskCode,"lcd_Task",256,NULL,3,&lcdtHandle );
-	Returned[4] = xTaskCreate(device_testing_TaskCode,"device_testing",2048,NULL,30,&device_testingramtHandle );
-	Returned[5] = xTaskCreate(ble_Task_TaskCode,"ble_Task_Task",128,NULL,5,&bleHandle );
+	Returned[0] = xTaskCreate(led_TaskCode,"led_Task",128,NULL,1,&ledHandle );
+	Returned[1] = xTaskCreate(send_usart_TaskCode,"send_usart_Task",128,NULL,1,&send_usartHandle );
+	Returned[2] = xTaskCreate(recv_usart_TaskCode,"recv_usart_Task",128,NULL,1,&recv_usartHandle );
+	Returned[4] = xTaskCreate(device_testing_TaskCode,"device_testing",2048,NULL,9,&device_testingramtHandle );
+	Returned[6] = xTaskCreate	(lvgl_TaskCode,"lvgl_Task",2048,NULL,2,&lvgl_Handle );
 	
-	printf("thread state:\t");//打印线程状态
-	for(int i=0;i<Task_num;i++)
-		printf("%ld\t",Returned[i]);//打印线程状态
-	printf("\r\n");
-	vTaskStartScheduler();
+	get_thread_state();
+	
+	vTaskStartScheduler();//开始调度
 }
-////定时器回调函数
-//void usart_timer_CallbackFunction( TimerHandle_t xTimer )
-//{
-//	printf("定时器时间到\r\n");
-//}
 
 void sys_init(void)
 {
 	LED_Init();					// 初始化LED引脚
 	USART1_Init();				// USART1初始化
-	MX_USART2_UART_Init();//USART2初始化
-	SPI_LCD_Init();     	 	// 液晶屏以及SPI初始化 
-
-	SD_Status = BSP_SD_Init(SD_Instance);	//SD卡初始化
-	if( SD_Status == BSP_ERROR_NONE )	//检测是否初始化成功
-	{		
-		printf("SD卡初始化成功 \r\n");	
-	}
-	else
-	printf("检测不到SD卡，ERROR: %d\r\n",SD_Status);	
+	MX_USART2_UART_Init();//USART2初始化 
 	MX_FMC_Init();				// SDRAM初始化
+	
+	lv_init();
+	lv_port_disp_init();
+}
+
+////线程状态
+void get_thread_state(void)
+{
+	printf("thread state:\t");//打印线程状态
+	for(int i=0;i<Task_num;i++)
+		printf("%ld\t",Returned[i]);//打印线程状态
+	printf("\r\n");
 }
 
 void led_TaskCode( void * pvParameters )
@@ -102,11 +84,11 @@ void led_TaskCode( void * pvParameters )
     while(1)
     {
 			HAL_GPIO_TogglePin(GPIOC,GPIO_PIN_13);
-			vTaskDelay(100);
+			vTaskDelay(1000);
     }
 }
 
-void usart_TaskCode( void * pvParameters )
+void send_usart_TaskCode( void * pvParameters )
 {
 	while(1)
 	{
@@ -115,6 +97,7 @@ void usart_TaskCode( void * pvParameters )
 		printf("systick:[%d]\r\n",HAL_GetTick());
 		
 		xSemaphoreGive(usart_Semaphore);
+		
 		vTaskDelay(1000);
 	}
 }
@@ -126,22 +109,12 @@ void recv_usart_TaskCode( void * pvParameters )
 		HAL_UART_Receive(&huart1,&recv_uart_buf,1,0xFFFF);
 		
 		xSemaphoreTake(usart_Semaphore,portMAX_DELAY);
+		
 		printf("recv_uart_buf:[%d]\r\n",recv_uart_buf);
 		printf("recv_uart_buf:[%c]\r\n",recv_uart_buf);
 		
 		xSemaphoreGive(usart_Semaphore);
 		vTaskDelay(1);
-	}
-}
-
-void ble_Task_TaskCode ( void * pvParameters )
-{
-	HAL_UART_Receive_IT(&huart2,&recv_uart2_buf,1);
-	while(1)
-	{
-		HAL_UART_Transmit(&huart2,"AT+DEFAULT\r\n",sizeof("AT+DEFAULT\r\n"),0xffff);
-//		HAL_UART_Transmit(&huart2,"AT+NAME\r\n",sizeof("AT+NAME\r\n"),0xffff);
-		vTaskDelay(1000);
 	}
 }
 
@@ -154,44 +127,42 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
     }
 	  if(huart->Instance == USART2)
     {
-			recv_uart2_len++;
-			recv_uart2[recv_uart2_len-1]=recv_uart2_buf;
-			if(recv_uart2_buf == 0x0A)//接收结束标志位,根据实际需求，\r0x0D,\n0x0A
-			{	
-				
-				printf("recv_uart2_buf:%s\r\n",recv_uart2);
-				
-				recv_uart2_len=0;  //清空接收长度
-				for (unsigned int i = 0; i < 200; i++)
-					recv_uart2[i] = '\0' ; //for循环清空数组 
-			}
        HAL_UART_Receive_IT(&huart2,&recv_uart2_buf,1);
-    }
-}
-
-
-void lcd_TaskCode( void * pvParameters )
-{ 
-	uint32_t count=0;
-	while(1)
-	{
-		count++;
-		LCD_DisplayNumber(20,1,count,6);
-		vTaskDelay(1000);
-	}
+		}
 }
 
 void device_testing_TaskCode(void * pvParameters)
 {
 	xSemaphoreTake(usart_Semaphore,portMAX_DELAY);
-	//sd_test();
 	fatfs_test();
 	sdram_test();
 	xSemaphoreGive(usart_Semaphore);
 	while(1)
 	{
-		vTaskDelay(1);
+		vTaskDelay(1000);
 	}
+}
+
+void lvgl_TaskCode(void * pvParameters)
+{
+	xSemaphoreTake(lvgl_Semaphore,portMAX_DELAY);
+	
+	lv_obj_t* btn = lv_btn_create(lv_scr_act()); // 创建Button对象
+	lv_obj_t* label = lv_label_create(btn); // 基于Button对象创建Label对象
+	lv_obj_set_size(btn, 100, 50); // 设置对象大小,宽度和高度
+	lv_obj_set_pos(btn,20,20);
+	lv_label_set_text(label, "open"); // 设置显示内容
+	lv_obj_center(label); // 对象居中显示
+	
+	xSemaphoreGive(lvgl_Semaphore);
+	while(1)
+	{
+		xSemaphoreTake(lvgl_Semaphore,portMAX_DELAY);
+		lv_task_handler();
+		lv_timer_handler();
+		xSemaphoreGive(lvgl_Semaphore);
+		vTaskDelay(5);
+	}	
 }
 
 void fatfs_test(void)
@@ -234,7 +205,7 @@ void fatfs_test(void)
 		MyFile_Res = f_write(&MyFile,MyFile_WriteBuffer,sizeof(MyFile_WriteBuffer),&MyFile_Num);	//向文件写入数据
 		if (MyFile_Res == FR_OK)	
 		{
-			printf("写入成功，写入内容为：\r\n");
+			printf("写入成功，写入内容为：");
 			printf("%s\r\n",MyFile_WriteBuffer);
 		}
 		else
@@ -267,7 +238,7 @@ void fatfs_test(void)
 				f_close(&MyFile);	  //关闭文件	
 			}
 		}
-		printf("校验成功，读出的数据为：\r\n");
+		printf("校验成功，读出的数据为：");
 		printf("%s\r\n",MyFile_ReadBuffer);
 	}	
 	else
@@ -277,86 +248,6 @@ void fatfs_test(void)
 	}	
 	
 	f_close(&MyFile);	  //关闭文件	
-}
-void sd_test(void)
-{
-		uint32_t i = 0;	
-		uint32_t ExecutionTime_Begin;		// 开始时间
-		uint32_t ExecutionTime_End;		// 结束时间
-		uint32_t ExecutionTime;				// 执行时间	
-		float    ExecutionSpeed;			// 执行速度
-		printf ("SD卡测试>>>\r\n");
-		// 擦除 >>>>>>>    
-		ExecutionTime_Begin 	= HAL_GetTick();	// 获取 systick 当前时间，单位ms
-		SD_Status = BSP_SD_Erase(SD_Instance,Test_Addr, NumOf_Blocks);
-		while(BSP_SD_GetCardState(SD_Instance) != SD_TRANSFER_OK);	//等待通信结束	
-		ExecutionTime_End		= HAL_GetTick();	// 获取 systick 当前时间，单位ms
-
-		ExecutionTime = ExecutionTime_End - ExecutionTime_Begin; // 计算擦除时间，单位ms
-
-		if( SD_Status == BSP_ERROR_NONE )
-		{
-			printf ("擦除成功, 擦除所需时间: %d ms\r\n",ExecutionTime);		
-		}
-		else
-		{
-			printf ("擦除失败!!!!!  错误代码:%d\r\n",SD_Status);
-			while (1);
-		}		
-
-		// 写入 >>>>>>>    
-		for(i=0;i<Test_BlockSize;i++)	//将要写入SD卡的数据写入数组
-		{
-			SD_WriteBuffer[i] = i;
-		}
-
-		ExecutionTime_Begin 	= HAL_GetTick();	// 获取 systick 当前时间，单位ms	
-		SD_Status = BSP_SD_WriteBlocks(SD_Instance,SD_WriteBuffer, Test_Addr, NumOf_Blocks);	//块写入	
-		while(BSP_SD_GetCardState(SD_Instance) != SD_TRANSFER_OK);	//等待通信结束	
-		ExecutionTime_End		= HAL_GetTick();	// 获取 systick 当前时间，单位ms
-
-		ExecutionTime  = ExecutionTime_End - ExecutionTime_Begin; 		// 计算擦除时间，单位ms
-		ExecutionSpeed = (float)BLOCKSIZE * NumOf_Blocks / ExecutionTime /1024 ; // 计算写入速度，单位 MB/S	
-		if( SD_Status == BSP_ERROR_NONE )
-		{
-			printf ("写入成功,数据大小：%d KB, 耗时: %d ms, 写入速度：%.2f MB/s\r\n",BLOCKSIZE * NumOf_Blocks/1024,ExecutionTime,ExecutionSpeed);		
-		}
-		else
-		{
-			printf ("写入错误!!!!!  错误代码:%d\r\n",SD_Status);
-			while (1);
-		}		
-
-
-		// 读取 >>>>>>>    
-		ExecutionTime_Begin 	= HAL_GetTick();	// 获取 systick 当前时间，单位ms		
-		SD_Status = BSP_SD_ReadBlocks(SD_Instance,SD_ReadBuffer, Test_Addr, NumOf_Blocks);	//块读取
-		while(BSP_SD_GetCardState(SD_Instance) != SD_TRANSFER_OK);	//等待通信结束	
-		ExecutionTime_End		= HAL_GetTick();	// 获取 systick 当前时间，单位ms
-
-		ExecutionTime  = ExecutionTime_End - ExecutionTime_Begin; 						// 计算擦除时间，单位ms
-		ExecutionSpeed = (float)BLOCKSIZE * NumOf_Blocks / ExecutionTime / 1024 ; 	// 计算读取速度，单位 MB/S 
-
-		if( SD_Status == BSP_ERROR_NONE )
-		{
-			printf ("读取成功,数据大小：%d KB, 耗时: %d ms, 读取速度：%.2f MB/s \r\n",BLOCKSIZE * NumOf_Blocks/1024,ExecutionTime,ExecutionSpeed);		
-		}
-		else
-		{
-			printf ("读取错误!!!!!  错误代码:%d\r\n",SD_Status);
-		while (1);
-		}		
-
-		// 校验 >>>>>>>   
-		for(i=0;i<Test_BlockSize;i++)	//验证读出的数据是否等于写入的数据
-		{
-		if( SD_WriteBuffer[i] != SD_ReadBuffer[i] )	//如果数据不相等，则返回0	
-		{
-			printf ("数据校验失败!!!!!\r\n");	
-			while(1);
-		}
-		}		
-		printf ("校验通过!!!!!SD卡测试正常\r\n");		
 }
 
 void sdram_test( void )

@@ -20,6 +20,9 @@
 #include "ffconf.h"
 #include "diskio.h"
 
+#include "lvgl.h" 
+#include "lv_port_disp.h"
+
 void FreeRTOS_Start(void);
 void sys_init(void);
 #endif

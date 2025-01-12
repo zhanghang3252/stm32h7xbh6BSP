@@ -78,24 +78,24 @@ void USART1_Init(void)
 *  根据编译器，选择对应的代码即可
 *************************************************************************************************/
 
-//// AC5编译器使用这段代码
-//#pragma import(__use_no_semihosting)  
-//int _ttywrch(int ch)    
-//{
-//    ch=ch;
-//	return ch;
-//}         
-//struct __FILE 
-//{ 
-//	int handle; 
+// AC5编译器使用这段代码
+#pragma import(__use_no_semihosting)  
+int _ttywrch(int ch)    
+{
+    ch=ch;
+	return ch;
+}         
+struct __FILE 
+{ 
+	int handle; 
 
-//}; 
-//FILE __stdout;       
+}; 
+FILE __stdout;       
 
-//void _sys_exit(int x) 
-//{ 
-//	x = x; 
-//} 
+void _sys_exit(int x) 
+{ 
+	x = x; 
+} 
 
 
 

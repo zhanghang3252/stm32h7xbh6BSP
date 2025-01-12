@@ -1,14 +1,19 @@
 #ifndef __spi_lcd
 #define __spi_lcd
-
+#include "main.h"
 #include "stm32h7xx_hal.h"
 #include "usart.h"
 
 #include "lcd_fonts.h"	// 图片和字库文件不是必须，用户可自行删减
 #include	"lcd_image.h"
 
+#include "lvgl.h"
+extern DMA_HandleTypeDef hdma_spi5_tx;
+extern SPI_HandleTypeDef hspi5;	      // SPI_HandleTypeDef 结构体变量
 /*----------------------------------------------- 参数宏 -------------------------------------------*/
 
+#define USE_DEBUG 0
+#define USE_DMA 	0
 #define LCD_Width     240		// LCD的像素长度
 #define LCD_Height    280		// LCD的像素宽度
 
@@ -58,7 +63,7 @@
 
 
 /*------------------------------------------------ 函数声明 ----------------------------------------------*/
-
+void  LCD_WriteBuff(uint16_t *DataBuff, uint16_t DataSize);
 void  SPI_LCD_Init(void);      // 液晶屏以及SPI初始化   
 void  LCD_Clear(void);			 // 清屏函数
 void  LCD_ClearRect(uint16_t x, uint16_t y, uint16_t width, uint16_t height);	// 局部清屏函数
@@ -95,6 +100,7 @@ void  LCD_DrawCircle(uint16_t x, uint16_t y, uint16_t r);									//画圆
 void  LCD_DrawEllipse(int x, int y, int r1, int r2);											//画椭圆
 
 //>>>>>	区域填充函数
+void LCD_Fill(uint16_t x, uint16_t y, uint16_t width, uint16_t height,uint32_t color);//填充矩形带颜色
 void  LCD_FillRect(uint16_t x, uint16_t y, uint16_t width, uint16_t height);			//填充矩形
 void  LCD_FillCircle(uint16_t x, uint16_t y, uint16_t r);									//填充圆
 
@@ -104,6 +110,8 @@ void 	LCD_DrawImage(uint16_t x,uint16_t y,uint16_t width,uint16_t height,const u
 //>>>>>	批量复制函数，直接将数据复制到屏幕的显存
 void	LCD_CopyBuffer(uint16_t x, uint16_t y,uint16_t width,uint16_t height,uint16_t *DataBuff);
 
+//为LVGL提供的刷屏函数
+void lvgl_LCD_Color_Fill(uint16_t sx, uint16_t sy, uint16_t ex, uint16_t ey, lv_color_t *color);
  /*--------------------------------------------- LCD其它引脚 -----------------------------------------------*/
 
 #define LCD_Backlight_PIN								GPIO_PIN_6				         // 背光  引脚				
