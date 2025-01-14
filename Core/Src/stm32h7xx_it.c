@@ -65,7 +65,6 @@ extern UART_HandleTypeDef huart1;
 extern UART_HandleTypeDef huart2;
 extern SPI_HandleTypeDef hspi5;
 extern DMA_HandleTypeDef hdma_spi5_tx;
-extern TIM_HandleTypeDef htim5;
 
 /* USER CODE END EV */
 
@@ -280,19 +279,4 @@ void DMA1_Stream0_IRQHandler(void)
 
   /* USER CODE END DMA1_Stream0_IRQn 1 */
 }
-
-/**
-  * @brief This function handles TIM5 global interrupt.
-  */
-void TIM5_IRQHandler(void)
-{
-  /* USER CODE BEGIN TIM5_IRQn 0 */
-
-  /* USER CODE END TIM5_IRQn 0 */
-  HAL_TIM_IRQHandler(&htim5);
-  /* USER CODE BEGIN TIM5_IRQn 1 */
-
-  /* USER CODE END TIM5_IRQn 1 */
-}
-
 /* USER CODE END 1 */

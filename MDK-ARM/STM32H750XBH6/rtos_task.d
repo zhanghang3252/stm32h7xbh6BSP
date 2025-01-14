@@ -182,6 +182,7 @@ stm32h750xbh6\rtos_task.o: ..\Drivers\LVGL\src/extra/widgets/imgbtn/lv_imgbtn.h
 stm32h750xbh6\rtos_task.o: ..\Drivers\LVGL\src/extra/widgets/span/lv_span.h
 stm32h750xbh6\rtos_task.o: ..\Drivers\User\Inc\sdmmc_sd.h
 stm32h750xbh6\rtos_task.o: ..\Drivers\User\Inc\sdram.h
+stm32h750xbh6\rtos_task.o: ..\Drivers\User\Inc\tim5.h
 stm32h750xbh6\rtos_task.o: ..\Drivers\FreeRTOS\include\FreeRTOS.h
 stm32h750xbh6\rtos_task.o: ..\Drivers\FreeRTOS\include\FreeRTOSConfig.h
 stm32h750xbh6\rtos_task.o: ..\Drivers\FreeRTOS\include\projdefs.h
@@ -199,3 +200,7 @@ stm32h750xbh6\rtos_task.o: ..\Drivers\FATFS\source\ffconf.h
 stm32h750xbh6\rtos_task.o: ..\Drivers\FATFS\source\ffconf.h
 stm32h750xbh6\rtos_task.o: ..\Drivers\FATFS\source\diskio.h
 stm32h750xbh6\rtos_task.o: ..\Drivers\LVGL\examples\porting\lv_port_disp.h
+stm32h750xbh6\rtos_task.o: ..\Drivers\LVGL\demos\lv_demos.h
+stm32h750xbh6\rtos_task.o: ..\Drivers\LVGL\demos\widgets/lv_demo_widgets.h
+stm32h750xbh6\rtos_task.o: ..\Drivers\LVGL\demos\widgets/../lv_demos.h
+stm32h750xbh6\rtos_task.o: ..\Drivers\LVGL\demos\benchmark/lv_demo_benchmark.h

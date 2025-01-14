@@ -1786,20 +1786,6 @@ HAL_StatusTypeDef LCD_SPI_TransmitBuffer (SPI_HandleTypeDef *hspi, uint16_t *pDa
 	return errorcode;
 }
 
-void lvgl_LCD_Color_Fill(uint16_t sx, uint16_t sy, uint16_t ex, uint16_t ey, lv_color_t *color)
-{
-
-	uint32_t y=0; 
-	uint16_t height, width;
-	width = ex - sx + 1;            //得到填充的宽度
-  height = ey - sy + 1;           //高度
-	
-	LCD_SetAddress(sx,sy,ex,ey);
-	
-	LCD_WriteBuff(&color->full,width*height);
-}
-
-
 
 /**************************************************************************************************************************************************************************************************************************************************************************FANKE***/
 // 实验平台：反客 STM32H750核心板

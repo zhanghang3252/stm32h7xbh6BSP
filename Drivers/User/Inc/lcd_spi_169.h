@@ -110,8 +110,6 @@ void 	LCD_DrawImage(uint16_t x,uint16_t y,uint16_t width,uint16_t height,const u
 //>>>>>	批量复制函数，直接将数据复制到屏幕的显存
 void	LCD_CopyBuffer(uint16_t x, uint16_t y,uint16_t width,uint16_t height,uint16_t *DataBuff);
 
-//为LVGL提供的刷屏函数
-void lvgl_LCD_Color_Fill(uint16_t sx, uint16_t sy, uint16_t ex, uint16_t ey, lv_color_t *color);
  /*--------------------------------------------- LCD其它引脚 -----------------------------------------------*/
 
 #define LCD_Backlight_PIN								GPIO_PIN_6				         // 背光  引脚				

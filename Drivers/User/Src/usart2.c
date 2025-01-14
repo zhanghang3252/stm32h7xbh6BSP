@@ -4,7 +4,6 @@ void HAL_USART2_MspInit(UART_HandleTypeDef* uartHandle);
 PD5     ------> USART2_TX
 PD6     ------> USART2_RX
 */
-char usart2_recv_buff=0;
 UART_HandleTypeDef huart2;
 
 void HAL_USART2_MspInit(UART_HandleTypeDef* uartHandle)
@@ -69,4 +68,9 @@ void MX_USART2_UART_Init(void)
     Error_Handler();
   }
 
+}
+
+void send_usart(UART_HandleTypeDef huart2,uint8_t *pData)
+{
+	HAL_UART_Transmit(&huart2,pData,sizeof(*pData),0xffff);
 }

@@ -1,15 +1,11 @@
 #include "rtos_task.h"
 #define Task_num 10
 //线程状态
-BaseType_t Returned[Task_num];
+BaseType_t task_Returned[Task_num];
 
 //线程句柄
-TaskHandle_t ledHandle = NULL;
-TaskHandle_t send_usartHandle = NULL;
-TaskHandle_t recv_usartHandle = NULL;
-TaskHandle_t device_testingramtHandle = NULL;
-TaskHandle_t bleHandle = NULL;
-TaskHandle_t lvgl_Handle= NULL;
+TaskHandle_t task_Handle[Task_num];
+
 //函数声明
 void get_thread_state(void);
 void fatfs_test(void);
@@ -19,6 +15,8 @@ void send_usart_TaskCode( void * pvParameters );
 void recv_usart_TaskCode( void * pvParameters );
 void device_testing_TaskCode(void * pvParameters);
 void lvgl_TaskCode(void * pvParameters);
+void encoder_TaskCode(void * pvParameters);
+void lvgl_tick_TaskCode(void * pvParameters);
 //变量
 #define	NumOf_Blocks	64
 #define Test_BlockSize  ((BLOCKSIZE * NumOf_Blocks) >> 2)	 //定义数据大小,SD块大小为512字节，因为是32位的数组，所以这里除以4
@@ -28,7 +26,7 @@ void lvgl_TaskCode(void * pvParameters);
 
 unsigned char recv_uart_buf=0;
 unsigned char recv_uart2_buf=0;
-
+unsigned char TickHooktime=0;
 FATFS 	SD_FatFs; 		// 文件系统对象
 FRESULT 	MyFile_Res;    // 操作结果 
 uint16_t BufferSize = 0;	
@@ -39,7 +37,7 @@ BYTE 	MyFile_ReadBuffer[512];	//要读出的数据
 
 //信号量/互斥锁
 SemaphoreHandle_t usart_Semaphore;//创建串口互斥锁
-SemaphoreHandle_t lvgl_Semaphore;//创建串口互斥锁
+SemaphoreHandle_t lvgl_Semaphore;//创建;vg;互斥锁
 
 void FreeRTOS_Start( void )
 {
@@ -48,23 +46,30 @@ void FreeRTOS_Start( void )
 	usart_Semaphore=xSemaphoreCreateMutex();
 	lvgl_Semaphore=xSemaphoreCreateMutex();
 	//创建线程
-	Returned[0] = xTaskCreate(led_TaskCode,"led_Task",128,NULL,1,&ledHandle );
-	Returned[1] = xTaskCreate(send_usart_TaskCode,"send_usart_Task",128,NULL,1,&send_usartHandle );
-	Returned[2] = xTaskCreate(recv_usart_TaskCode,"recv_usart_Task",128,NULL,1,&recv_usartHandle );
-	Returned[4] = xTaskCreate(device_testing_TaskCode,"device_testing",2048,NULL,9,&device_testingramtHandle );
-	Returned[6] = xTaskCreate	(lvgl_TaskCode,"lvgl_Task",2048,NULL,2,&lvgl_Handle );
+	task_Returned[0] = xTaskCreate(led_TaskCode,"led_Task",128,NULL,1,&task_Handle[0] );
+//	task_Returned[1] = xTaskCreate(send_usart_TaskCode,"send_usart_Task",128,NULL,1,&task_Handle[1] );
+	task_Returned[2] = xTaskCreate(recv_usart_TaskCode,"recv_usart_Task",128,NULL,1,&task_Handle[2] );
+	task_Returned[3] = xTaskCreate(device_testing_TaskCode,"device_testing",2048,NULL,9,&task_Handle[3] );
+	task_Returned[4] = xTaskCreate	(lvgl_tick_TaskCode,"lvgl_tick_Task",512,NULL,2,&task_Handle[4] );
+	task_Returned[5] = xTaskCreate	(lvgl_TaskCode,"lvgl_Task",2048,NULL,2,&task_Handle[5] );
+//	Returned[6] = xTaskCreate	(encoder_TaskCode,"encoder_Task",256,NULL,1,&task_Handle[6] );
 	
 	get_thread_state();
 	
 	vTaskStartScheduler();//开始调度
 }
 
+//时间钩子函数
+void vApplicationTickHook(void)
+{
+}
 void sys_init(void)
 {
-	LED_Init();					// 初始化LED引脚
+	LED_Init();						// 初始化LED引脚
 	USART1_Init();				// USART1初始化
 	MX_USART2_UART_Init();//USART2初始化 
 	MX_FMC_Init();				// SDRAM初始化
+	MX_TIM4_Init();				// tim4旋转编码器接口测试
 	
 	lv_init();
 	lv_port_disp_init();
@@ -75,7 +80,7 @@ void get_thread_state(void)
 {
 	printf("thread state:\t");//打印线程状态
 	for(int i=0;i<Task_num;i++)
-		printf("%ld\t",Returned[i]);//打印线程状态
+		printf("%ld\t",task_Returned[i]);//打印线程状态
 	printf("\r\n");
 }
 
@@ -107,12 +112,11 @@ void recv_usart_TaskCode( void * pvParameters )
 	while(1)
 	{
 		HAL_UART_Receive(&huart1,&recv_uart_buf,1,0xFFFF);
-		
 		xSemaphoreTake(usart_Semaphore,portMAX_DELAY);
 		
-		printf("recv_uart_buf:[%d]\r\n",recv_uart_buf);
-		printf("recv_uart_buf:[%c]\r\n",recv_uart_buf);
-		
+		printf("recv_uart_buf:[%d] [%c]\r\n",recv_uart_buf,recv_uart_buf);	
+		if(recv_uart_buf == 9)//显示线程状态
+			get_thread_state();
 		xSemaphoreGive(usart_Semaphore);
 		vTaskDelay(1);
 	}
@@ -137,25 +141,15 @@ void device_testing_TaskCode(void * pvParameters)
 	fatfs_test();
 	sdram_test();
 	xSemaphoreGive(usart_Semaphore);
+	vTaskDelete(task_Handle[3]);
 	while(1)
 	{
-		vTaskDelay(1000);
+		vTaskDelay(1);
 	}
 }
 
-void lvgl_TaskCode(void * pvParameters)
+void lvgl_tick_TaskCode(void * pvParameters)
 {
-	xSemaphoreTake(lvgl_Semaphore,portMAX_DELAY);
-	
-//	lv_obj_t* btn = lv_btn_create(lv_scr_act()); // 创建Button对象
-//	lv_obj_t* label = lv_label_create(btn); // 基于Button对象创建Label对象
-//	lv_obj_set_size(btn, 100, 50); // 设置对象大小,宽度和高度
-//	lv_obj_set_pos(btn,20,20);
-//	lv_label_set_text(label, "open"); // 设置显示内容
-//	lv_obj_center(label); // 对象居中显示
-//	lv_demo_widgets();
-	lv_demo_benchmark();
-	xSemaphoreGive(lvgl_Semaphore);
 	while(1)
 	{
 		xSemaphoreTake(lvgl_Semaphore,portMAX_DELAY);
@@ -163,9 +157,45 @@ void lvgl_TaskCode(void * pvParameters)
 		lv_timer_handler();
 		xSemaphoreGive(lvgl_Semaphore);
 		vTaskDelay(5);
+	}
+}
+void lvgl_TaskCode(void * pvParameters)
+{
+	xSemaphoreTake(lvgl_Semaphore,portMAX_DELAY);
+	
+//	lv_demo_benchmark();
+//	lv_demo_widgets();
+//	lv_demo_music();
+//	lv_demo_stress();
+	lv_obj_t *switch1 = lv_switch_create(lv_scr_act());
+	lv_obj_set_size(switch1,100,50);
+	lv_obj_set_pos(switch1,50,50);
+	xSemaphoreGive(lvgl_Semaphore);
+	while(1)
+	{
+		
+		lv_obj_add_state(switch1, LV_STATE_CHECKED);	// 开
+		vTaskDelay(500);
+		lv_obj_clear_state(switch1, LV_STATE_CHECKED);	// 关
+		vTaskDelay(500);
 	}	
 }
 
+void encoder_TaskCode(void * pvParameters)
+{
+	unsigned int count=1,direction=0,temp=0;
+	HAL_TIM_Encoder_Start(&htim4,TIM_CHANNEL_ALL);//开启通道
+	while(1)
+	{
+		count=__HAL_TIM_GET_COUNTER(&htim4);//获取计数值
+		direction = __HAL_TIM_IS_TIM_COUNTING_DOWN(&htim4);//获得旋转方向
+		if(temp!=count)
+		{
+			printf("count :[%d],direction:[%d]",count,direction);
+		}
+		vTaskDelay(1);
+	}
+}
 void fatfs_test(void)
 {
 	BYTE work[FF_MAX_SS]; 

@@ -4,7 +4,7 @@
  */
 
 /*Copy this file as "lv_port_indev.c" and set this value to "1" to enable content*/
-#if 1
+#if 0
 
 /*********************
  *      INCLUDES
@@ -15,7 +15,7 @@
 /*********************
  *      DEFINES
  *********************/
-
+ 
 /**********************
  *      TYPEDEFS
  **********************/
@@ -23,7 +23,6 @@
 /**********************
  *  STATIC PROTOTYPES
  **********************/
-
 static void touchpad_init(void);
 static void touchpad_read(lv_indev_drv_t * indev_drv, lv_indev_data_t * data);
 static bool touchpad_is_pressed(void);
@@ -100,19 +99,19 @@ void lv_port_indev_init(void)
      * Mouse
      * -----------------*/
 
-    /*Initialize your mouse if you have*/
-    mouse_init();
+		/*Initialize your mouse if you have*/
+		mouse_init();
 
-    /*Register a mouse input device*/
-    lv_indev_drv_init(&indev_drv);
-    indev_drv.type = LV_INDEV_TYPE_POINTER;
-    indev_drv.read_cb = mouse_read;
-    indev_mouse = lv_indev_drv_register(&indev_drv);
+		/*Register a mouse input device*/
+		lv_indev_drv_init(&indev_drv);
+		indev_drv.type = LV_INDEV_TYPE_POINTER;
+		indev_drv.read_cb = mouse_read;
+		indev_mouse = lv_indev_drv_register(&indev_drv);
 
-    /*Set cursor. For simplicity set a HOME symbol now.*/
-    lv_obj_t * mouse_cursor = lv_img_create(lv_scr_act());
-    lv_img_set_src(mouse_cursor, LV_SYMBOL_HOME);
-    lv_indev_set_cursor(indev_mouse, mouse_cursor);
+		/*Set cursor. For simplicity set a HOME symbol now.*/
+		lv_obj_t * mouse_cursor = lv_img_create(lv_scr_act());
+		lv_img_set_src(mouse_cursor, LV_SYMBOL_HOME);
+		lv_indev_set_cursor(indev_mouse, mouse_cursor);
 
     /*------------------
      * Keypad
@@ -267,7 +266,7 @@ static void mouse_get_xy(lv_coord_t * x, lv_coord_t * y)
 /*------------------
  * Keypad
  * -----------------*/
-
+extern unsigned char recv_uart_buf;
 /*Initialize your keypad*/
 static void keypad_init(void)
 {
@@ -279,9 +278,6 @@ static void keypad_read(lv_indev_drv_t * indev_drv, lv_indev_data_t * data)
 {
     static uint32_t last_key = 0;
 
-    /*Get the current x and y coordinates*/
-    mouse_get_xy(&data->point.x, &data->point.y);
-
     /*Get whether the a key is pressed and save the pressed key*/
     uint32_t act_key = keypad_get_key();
     if(act_key != 0) {
@@ -289,19 +285,19 @@ static void keypad_read(lv_indev_drv_t * indev_drv, lv_indev_data_t * data)
 
         /*Translate the keys to LVGL control characters according to your key definitions*/
         switch(act_key) {
-            case 1:
+            case 49:
                 act_key = LV_KEY_NEXT;
                 break;
-            case 2:
+            case 50:
                 act_key = LV_KEY_PREV;
                 break;
-            case 3:
+            case 51:
                 act_key = LV_KEY_LEFT;
                 break;
-            case 4:
+            case 52:
                 act_key = LV_KEY_RIGHT;
                 break;
-            case 5:
+            case 53:
                 act_key = LV_KEY_ENTER;
                 break;
         }
@@ -319,8 +315,7 @@ static void keypad_read(lv_indev_drv_t * indev_drv, lv_indev_data_t * data)
 static uint32_t keypad_get_key(void)
 {
     /*Your code comes here*/
-
-    return 0;
+    return recv_uart_buf;
 }
 
 /*------------------
@@ -337,8 +332,8 @@ static void encoder_init(void)
 static void encoder_read(lv_indev_drv_t * indev_drv, lv_indev_data_t * data)
 {
 
-    data->enc_diff = encoder_diff;
-    data->state = encoder_state;
+    data->enc_diff = __HAL_TIM_GET_COUNTER(&htim4);;
+    data->state = __HAL_TIM_IS_TIM_COUNTING_DOWN(&htim4);
 }
 
 /*Call this function in an interrupt to process encoder events (turn, press)*/
@@ -346,8 +341,6 @@ static void encoder_handler(void)
 {
     /*Your code comes here*/
 
-    encoder_diff += 0;
-    encoder_state = LV_INDEV_STATE_REL;
 }
 
 /*------------------
