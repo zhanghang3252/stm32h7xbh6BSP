@@ -1,0 +1,16 @@
+stm32h750xbh6\lv_hal_tick.o: ..\Drivers\LVGL\src\hal\lv_hal_tick.c
+stm32h750xbh6\lv_hal_tick.o: ..\Drivers\LVGL\src\hal\lv_hal_tick.h
+stm32h750xbh6\lv_hal_tick.o: ..\Drivers\LVGL\src\hal\../lv_conf_internal.h
+stm32h750xbh6\lv_hal_tick.o: C:\APP\Keil_v5\ARM\ARMCC\Bin\..\include\stdint.h
+stm32h750xbh6\lv_hal_tick.o: ..\Drivers\LVGL\src\hal\../lv_conf_kconfig.h
+stm32h750xbh6\lv_hal_tick.o: ..\Drivers\LVGL\examples\porting\../../lv_conf.h
+stm32h750xbh6\lv_hal_tick.o: C:\APP\Keil_v5\ARM\ARMCC\Bin\..\include\stdbool.h
+stm32h750xbh6\lv_hal_tick.o: C:\APP\Keil_v5\ARM\ARMCC\Bin\..\include\stddef.h
+stm32h750xbh6\lv_hal_tick.o: ..\Drivers\FreeRTOS\include\FreeRTOS.h
+stm32h750xbh6\lv_hal_tick.o: ..\Drivers\FreeRTOS\include\FreeRTOSConfig.h
+stm32h750xbh6\lv_hal_tick.o: C:\APP\Keil_v5\ARM\ARMCC\Bin\..\include\stdio.h
+stm32h750xbh6\lv_hal_tick.o: ..\Drivers\FreeRTOS\include\projdefs.h
+stm32h750xbh6\lv_hal_tick.o: ..\Drivers\FreeRTOS\include\portable.h
+stm32h750xbh6\lv_hal_tick.o: ..\Drivers\FreeRTOS\include\deprecated_definitions.h
+stm32h750xbh6\lv_hal_tick.o: ..\Drivers\FreeRTOS\portable\RVDS\ARM_CM7\r0p1\portmacro.h
+stm32h750xbh6\lv_hal_tick.o: ..\Drivers\FreeRTOS\include\mpu_wrappers.h

@@ -69,8 +69,7 @@ void HAL_SPI_MspInit(SPI_HandleTypeDef* hspi)
    GPIO_InitTypeDef GPIO_InitStruct = {0};
    if(hspi->Instance==SPI5)
    {
-		 __HAL_RCC_DMA1_CLK_DISABLE();
-		 HAL_NVIC_DisableIRQ(DMA1_Stream0_IRQn);
+	 
 		 HAL_DMA_DeInit(&hdma_spi5_tx);
 		 
 		__HAL_RCC_SPI5_CLK_ENABLE();			// 使能SPI5时钟
@@ -79,8 +78,8 @@ void HAL_SPI_MspInit(SPI_HandleTypeDef* hspi)
 		__HAL_RCC_GPIOJ_CLK_ENABLE();
 		__HAL_RCC_GPIOH_CLK_ENABLE();		
 		
-      GPIO_LDC_Backlight_CLK_ENABLE;   // 使能 背光        引脚时钟
-      GPIO_LDC_DC_CLK_ENABLE;          // 使能 数据指令选择 引脚时钟
+		GPIO_LDC_Backlight_CLK_ENABLE;   // 使能 背光        引脚时钟
+		GPIO_LDC_DC_CLK_ENABLE;          // 使能 数据指令选择 引脚时钟
 		 
 /******************************************************  
 
@@ -114,14 +113,14 @@ void HAL_SPI_MspInit(SPI_HandleTypeDef* hspi)
 		GPIO_InitStruct.Pin 		= LCD_Backlight_PIN;				// 背光 引脚
 		GPIO_InitStruct.Mode 	= GPIO_MODE_OUTPUT_PP;			// 推挽输出模式
 		GPIO_InitStruct.Pull 	= GPIO_NOPULL;						// 无上下拉
-		GPIO_InitStruct.Speed 	= GPIO_SPEED_FREQ_LOW;			// 速度等级低
+		GPIO_InitStruct.Speed 	= GPIO_SPEED_FREQ_VERY_HIGH;			// 速度等级低
 		HAL_GPIO_Init(LCD_Backlight_PORT, &GPIO_InitStruct);	// 初始化  
 
 // 初始化 数据指令选择 引脚  
 		GPIO_InitStruct.Pin 		= LCD_DC_PIN;				      // 数据指令选择 引脚
 		GPIO_InitStruct.Mode 	= GPIO_MODE_OUTPUT_PP;			// 推挽输出模式
 		GPIO_InitStruct.Pull 	= GPIO_NOPULL;						// 无上下拉
-		GPIO_InitStruct.Speed 	= GPIO_SPEED_FREQ_LOW;			// 速度等级低
+		GPIO_InitStruct.Speed 	= GPIO_SPEED_FREQ_VERY_HIGH;			// 速度等级低
 		HAL_GPIO_Init(LCD_DC_PORT, &GPIO_InitStruct);	      // 初始化  
    }
 }
@@ -169,7 +168,9 @@ void MX_SPI5_Init(void)
 	/* SPI5 DMA Init */
 	/* SPI5_TX Init */
 	__HAL_RCC_DMA1_CLK_ENABLE();
-
+	HAL_NVIC_SetPriority(DMA1_Stream0_IRQn, 0, 0);
+	HAL_NVIC_EnableIRQ(DMA1_Stream0_IRQn);
+	
 	hdma_spi5_tx.Instance = DMA1_Stream0;
 	hdma_spi5_tx.Init.Request = DMA_REQUEST_SPI5_TX;
 	hdma_spi5_tx.Init.Direction = DMA_MEMORY_TO_PERIPH;
@@ -180,8 +181,7 @@ void MX_SPI5_Init(void)
 	hdma_spi5_tx.Init.Mode = DMA_NORMAL;
 	hdma_spi5_tx.Init.Priority = DMA_PRIORITY_LOW;
 	hdma_spi5_tx.Init.FIFOMode = DMA_FIFOMODE_ENABLE;
-	HAL_NVIC_SetPriority(DMA1_Stream0_IRQn, 0, 0);
-	HAL_NVIC_EnableIRQ(DMA1_Stream0_IRQn);
+
 	if (HAL_DMA_Init(&hdma_spi5_tx) != 	HAL_OK)
 	{
 		Error_Handler();
@@ -268,36 +268,6 @@ void  LCD_WriteData_16bit(uint16_t lcd_data)
 	#endif
 }
 
-/****************************************************************************************************************************************
-*	函 数 名: LCD_WriteData_32bit
-*
-*	入口参数: lcd_data - 需要写入的数据，32位
-*
-*	函数功能: 写入16位数据
-*	
-****************************************************************************************************************************************/
-
-void  LCD_WriteData_32bit(uint32_t lcd_data)
-{
-	uint8_t lcd_data_buff[4];
-	uint16_t res=0;    // 数据发送区
-	LCD_DC_Data;      // 数据指令选择 引脚输出高电平，代表本次传输 数据
-
-	lcd_data_buff[0] = lcd_data>>18;  // 将数据拆分
-	lcd_data_buff[1] = lcd_data>>16;
-	lcd_data_buff[2] = lcd_data>>8;  // 将数据拆分
-	lcd_data_buff[3] = lcd_data;
-	
-	#if(USE_DMA == 1)
-	res=HAL_SPI_Transmit_DMA(&LCD_SPI, lcd_data_buff, 2);
-	#else
-	res=HAL_SPI_Transmit(&LCD_SPI, lcd_data_buff, 4, 1000) ;   // 启动SPI传输
-	#endif
-	
-	#if(USE_DEBUG == 1)
-	printf("LCD_WriteData_16bit res:%d\r\n",res);
-	#endif
-}
 /****************************************************************************************************************************************
 *	函 数 名: LCD_WriteBuff
 *

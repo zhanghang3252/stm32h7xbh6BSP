@@ -147,13 +147,14 @@ void lvgl_TaskCode(void * pvParameters)
 {
 	xSemaphoreTake(lvgl_Semaphore,portMAX_DELAY);
 	
-	lv_obj_t* btn = lv_btn_create(lv_scr_act()); // 创建Button对象
-	lv_obj_t* label = lv_label_create(btn); // 基于Button对象创建Label对象
-	lv_obj_set_size(btn, 100, 50); // 设置对象大小,宽度和高度
-	lv_obj_set_pos(btn,20,20);
-	lv_label_set_text(label, "open"); // 设置显示内容
-	lv_obj_center(label); // 对象居中显示
-	
+//	lv_obj_t* btn = lv_btn_create(lv_scr_act()); // 创建Button对象
+//	lv_obj_t* label = lv_label_create(btn); // 基于Button对象创建Label对象
+//	lv_obj_set_size(btn, 100, 50); // 设置对象大小,宽度和高度
+//	lv_obj_set_pos(btn,20,20);
+//	lv_label_set_text(label, "open"); // 设置显示内容
+//	lv_obj_center(label); // 对象居中显示
+//	lv_demo_widgets();
+	lv_demo_benchmark();
 	xSemaphoreGive(lvgl_Semaphore);
 	while(1)
 	{
